@@ -11,6 +11,7 @@ kotest = "6.2.6"
 kotlinx-coroutines = "1.11.0"
 jackson = "3.2.4"
 json-schema-validator = "3.0.8"
+wiremock = "3.13.2"
 
 [libraries]
 # JSON (llm adapter only: core never depends on a JSON library)
@@ -26,6 +27,8 @@ archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit" 
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+# Standalone build: its own dependencies are shaded, so they cannot clash with ours.
+wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
 
 # Gradle plugins, used as dependencies of the convention plugins in build-logic
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
