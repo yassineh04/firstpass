@@ -58,6 +58,10 @@ eval/       Evaluation cases for review quality
 docs/       Architecture decision records and guides
 ```
 
+## Architecture decisions
+
+Each structural choice, with the alternatives that were rejected and why, is recorded as an ADR in [docs/adr](docs/adr/README.md).
+
 ## Getting started
 
 Local setup instructions will be added as the backend, frontend and infrastructure skeletons land in phase 0.
