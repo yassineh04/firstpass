@@ -17,7 +17,8 @@ data class ValidatedFindings(
 /**
  * Business checks on the comments of the model, which may be wrong or manipulated: the file
  * must belong to the batch, the lines must be commentable, the confidence and the severity
- * must reach their thresholds. The text is cleaned before anything is published.
+ * must reach their thresholds. The text is cleaned and unsafe code suggestions are dropped
+ * before anything is published.
  */
 class FindingValidator(
     private val settings: ReviewSettings,
@@ -38,7 +39,7 @@ class FindingValidator(
             val file = filesByPath[comment.path]
             // A range that starts and ends on the same line is a single-line comment.
             val startLine = comment.startLine?.takeIf { it != comment.line }
-            val finding = toFinding(comment, startLine, file?.contentAt(comment.line).orEmpty())
+            val finding = toFinding(comment, startLine, file)
             val anchorable = file != null && isAnchorable(file, startLine, comment.line)
             if (anchorable) anchored += finding else unanchored += finding
         }
@@ -59,9 +60,10 @@ class FindingValidator(
     private fun toFinding(
         comment: ModelComment,
         startLine: Int?,
-        lineContent: String,
+        file: AnnotatedFile?,
     ): Finding {
         val title = TextSanitizer.clean(comment.title, MAX_TITLE)
+        val lineContent = file?.contentAt(comment.line).orEmpty()
         return Finding(
             path = comment.path,
             startLine = startLine,
@@ -70,7 +72,10 @@ class FindingValidator(
             category = comment.category,
             title = title,
             body = TextSanitizer.clean(comment.body, MAX_BODY),
-            suggestion = comment.suggestion?.take(MAX_SUGGESTION)?.takeIf { settings.suggestions },
+            suggestion =
+                comment.suggestion
+                    ?.takeIf { settings.suggestions }
+                    ?.let { SuggestionCheck.safe(it, file, startLine ?: comment.line, comment.line) },
             confidence = comment.confidence,
             fingerprint = Fingerprint.of(comment.path, comment.category, title, lineContent),
         )
@@ -80,6 +85,5 @@ class FindingValidator(
         const val MIN_CONFIDENCE = 0.6
         const val MAX_TITLE = 90
         const val MAX_BODY = 800
-        const val MAX_SUGGESTION = 1200
     }
 }
