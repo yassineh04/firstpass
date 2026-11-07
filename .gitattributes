@@ -1,0 +1,19 @@
+# Store text files with LF line endings and check them out with LF on every OS,
+# so ktlint, shell scripts and Linux CI runners see the same bytes as Windows.
+* text=auto eol=lf
+
+# Windows batch scripts (e.g. gradlew.bat) must keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: never touch line endings, never diff as text.
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

@@ -1,0 +1,36 @@
+# Secrets and local environment (never commit real values)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Gradle and Kotlin
+.gradle/
+build/
+.kotlin/
+
+# Node
+node_modules/
+dist/
+coverage/
+npm-debug.log*
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
+# IDEs and OS
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Claude Code personal settings
+.claude/settings.local.json
