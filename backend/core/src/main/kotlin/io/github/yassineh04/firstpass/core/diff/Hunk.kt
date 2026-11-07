@@ -33,3 +33,11 @@ data class Hunk(
     val newCount: Int,
     val lines: List<DiffLine>,
 )
+
+/** The same line with another content and the same numbers (used to redact or shorten a line). */
+internal fun DiffLine.withContent(content: String): DiffLine =
+    when (this) {
+        is AddedLine -> copy(content = content)
+        is ContextLine -> copy(content = content)
+        is RemovedLine -> copy(content = content)
+    }
