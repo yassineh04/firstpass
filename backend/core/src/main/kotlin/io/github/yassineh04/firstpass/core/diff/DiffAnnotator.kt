@@ -26,6 +26,18 @@ class AnnotatedFile(
             (listOf(hunk.header) + hunk.lines.map(::renderLine)).joinToString("\n")
         }
 
+    /** Content of a new-file line shown in the diff (added or context line), or null if absent. */
+    fun contentAt(newLine: Int): String? =
+        hunks.firstNotNullOfOrNull { hunk ->
+            hunk.lines.firstNotNullOfOrNull { line ->
+                when (line) {
+                    is AddedLine -> line.content.takeIf { line.newLine == newLine }
+                    is ContextLine -> line.content.takeIf { line.newLine == newLine }
+                    is RemovedLine -> null
+                }
+            }
+        }
+
     fun isCommentable(
         line: Int,
         commentOn: CommentOn,

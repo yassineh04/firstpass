@@ -27,6 +27,7 @@ data class ReviewSettings(
     val maxComments: Int = 10,
     val focus: Set<Category> = DEFAULT_FOCUS,
     val commentOn: CommentOn = CommentOn.ADDED_LINES,
+    val suggestions: Boolean = true,
     val instructions: String = "",
 ) {
     companion object {
