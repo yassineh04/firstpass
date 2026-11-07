@@ -5,6 +5,8 @@ plugins {
 
 dependencies {
     testImplementation(libs.archunit)
+    testImplementation(libs.kotest.property)
+    testImplementation(libs.kotlinx.coroutines.core)
 }
 
 kover {

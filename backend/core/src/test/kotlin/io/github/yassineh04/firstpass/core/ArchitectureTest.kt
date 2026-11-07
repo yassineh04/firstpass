@@ -16,9 +16,7 @@ class ArchitectureTest {
             .importPackages(CORE_PACKAGE)
 
     @Test
-    fun `core does not depend on AWS or Spring or HTTP clients`() {
-        // Phase 0: core has no production classes yet, so the rule is allowed to match nothing.
-        // Remove allowEmptyShould once core has classes (tracked in a GitHub issue).
+    fun `core does not depend on AWS or Spring or HTTP clients or JSON libraries`() {
         noClasses()
             .that()
             .resideInAPackage("$CORE_PACKAGE..")
@@ -34,8 +32,10 @@ class ArchitectureTest {
                 "org.apache.hc..",
                 "org.apache.http..",
                 "retrofit2..",
+                // The llm adapter parses and validates the model's JSON; core receives typed objects.
+                "com.fasterxml.jackson..",
+                "com.networknt..",
             ).because("core is the hexagonal domain and must be testable without network, AWS or Spring")
-            .allowEmptyShould(true)
             .check(coreClasses)
     }
 

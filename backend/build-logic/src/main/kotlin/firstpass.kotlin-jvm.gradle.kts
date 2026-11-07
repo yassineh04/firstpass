@@ -21,6 +21,7 @@ kotlin {
 dependencies {
     testImplementation(platform(libs.findLibrary("junit-bom").get()))
     testImplementation(libs.findLibrary("junit-jupiter").get())
+    testImplementation(libs.findLibrary("kotest-assertions-core").get())
     testRuntimeOnly(libs.findLibrary("junit-platform-launcher").get())
 }
 
