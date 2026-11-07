@@ -40,6 +40,7 @@ class FindingValidatorTest {
         severity: Severity = Severity.MAJOR,
         confidence: Double = 0.86,
         body: String = "repo.find(id) can return null.",
+        suggestion: String? = SUGGESTION,
     ) = ModelComment(
         path = path,
         startLine = startLine,
@@ -48,7 +49,7 @@ class FindingValidatorTest {
         category = Category.BUG,
         title = "Crash when the user is missing",
         body = body,
-        suggestion = "    val user = repo.find(id) ?: throw UserNotFound(id)",
+        suggestion = suggestion,
         confidence = confidence,
     )
 
@@ -139,6 +140,69 @@ class FindingValidatorTest {
     }
 
     @Test
+    fun `drops a suggestion that repeats the line above, whatever its indentation, and keeps the comment`() {
+        val finding =
+            validate(
+                comment(
+                    suggestion =
+                        "    fun findUser(id: String): User {\n" +
+                            "        val user = repo.find(id) ?: throw UserNotFound(id)",
+                ),
+            ).anchored.single()
+
+        finding.line shouldBe 41
+        finding.suggestion.shouldBeNull()
+    }
+
+    @Test
+    fun `drops a suggestion that repeats the line below the commented range`() {
+        validate(
+            comment(
+                startLine = 41,
+                line = 42,
+                suggestion =
+                    "    val user = repo.find(id) ?: throw UserNotFound(id)\n" +
+                        "    log.info(\"found \${user.id}\")\n" +
+                        "    return user\n",
+            ),
+        ).anchored
+            .single()
+            .suggestion
+            .shouldBeNull()
+    }
+
+    @Test
+    fun `keeps a suggestion that adds lines, or that sits next to a line outside the diff`() {
+        val addsLines = "    log.info(\"found user\")\n    metrics.increment(\"user.found\")"
+        val lastLineOfHunk = "fun added(): Unit = Unit"
+
+        validate(comment(line = 42, suggestion = addsLines), comment(line = 93, suggestion = lastLineOfHunk))
+            .anchored
+            .map { it.suggestion } shouldContainExactly listOf(addsLines, lastLineOfHunk)
+    }
+
+    @Test
+    fun `drops a suggestion over the length limit instead of cutting it`() {
+        val atLimit = "x".repeat(1200)
+
+        validate(comment(suggestion = atLimit), comment(suggestion = atLimit + "x"))
+            .anchored
+            .map { it.suggestion } shouldContainExactly listOf(atLimit, null)
+    }
+
+    @Test
+    fun `drops a suggestion that changes nothing`() {
+        validate(
+            comment(suggestion = "    val user = repo.find(id)!!  \n"),
+            comment(
+                startLine = 41,
+                line = 42,
+                suggestion = "    val user = repo.find(id)!!\n    log.info(\"found \${user.email}\")",
+            ),
+        ).anchored.map { it.suggestion } shouldContainExactly listOf(null, null)
+    }
+
+    @Test
     fun `cleans the text written by the model`() {
         validate(comment(body = "Ask @octocat before merging.")).anchored.single().body shouldBe
             "Ask `@octocat` before merging."
@@ -146,5 +210,6 @@ class FindingValidatorTest {
 
     private companion object {
         const val PATH = "src/UserService.kt"
+        const val SUGGESTION = "    val user = repo.find(id) ?: throw UserNotFound(id)"
     }
 }
