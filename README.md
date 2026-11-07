@@ -64,7 +64,7 @@ Each structural choice, with the alternatives that were rejected and why, is rec
 
 ## Getting started
 
-Requirements so far: JDK 21. Gradle itself is not needed: the wrapper downloads the right version. Frontend and infrastructure instructions come with their skeletons.
+Requirements so far: JDK 21, Node.js 22.18 or later, and npm 11 to add or update frontend dependencies (npm 10 fails on the current dependency tree). Gradle itself is not needed: the wrapper downloads the right version. Infrastructure instructions come with its skeleton.
 
 ### Backend
 
@@ -75,6 +75,18 @@ cd backend
 ```
 
 On Windows, run the same commands from Git Bash, or use `gradlew.bat` in PowerShell.
+
+### Frontend
+
+```bash
+cd frontend
+npm ci                    # install the exact versions from package-lock.json
+npm run dev               # dashboard on http://localhost:5173
+npm run lint              # ESLint, including the no-hardcoded-text rule
+npm run test:coverage     # unit tests with the 70 % coverage threshold
+npx playwright install chromium   # once, before the first end-to-end run
+npm run test:e2e          # end-to-end and accessibility (axe) tests
+```
 
 ## AI-assisted development
 
