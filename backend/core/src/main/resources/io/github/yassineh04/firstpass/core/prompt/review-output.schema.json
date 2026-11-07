@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "comments"],
+  "properties": {
+    "summary": { "type": "string", "maxLength": 600 },
+    "comments": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "line", "severity", "category", "title", "body", "confidence"],
+        "properties": {
+          "path": { "type": "string" },
+          "start_line": { "type": ["integer", "null"], "minimum": 1 },
+          "line": { "type": "integer", "minimum": 1 },
+          "severity": { "enum": ["critical", "major", "minor", "nit"] },
+          "category": { "enum": ["bug", "security", "performance", "reliability", "tests", "readability", "maintainability"] },
+          "title": { "type": "string", "maxLength": 90 },
+          "body": { "type": "string", "maxLength": 800 },
+          "suggestion": { "type": ["string", "null"], "maxLength": 1200 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}
