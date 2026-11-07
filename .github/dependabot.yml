@@ -23,6 +23,10 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    ignore:
+      # Kotlin 2.4 is fully supported up to Gradle 9.7. Lift this when a Kotlin release supports a newer Gradle.
+      - dependency-name: gradle-wrapper
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
     groups:
       gradle-minor-and-patch:
         patterns: ["*"]
@@ -37,7 +41,18 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    ignore:
+      # vue-tsc does not support TypeScript 7 yet. Lift this when it does.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Node.js types follow the Node.js version we run, not the newest release.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
+      # vitest and its plugins must always share one version. Listed first: a dependency
+      # joins the first group it matches.
+      vitest:
+        patterns: ["vitest", "@vitest/*"]
       npm-minor-and-patch:
         patterns: ["*"]
         update-types: [minor, patch]
