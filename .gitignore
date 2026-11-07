@@ -34,3 +34,7 @@ Thumbs.db
 
 # Claude Code personal settings
 .claude/settings.local.json
+
+# Local-only planning documents (kept out of the public repository)
+/CLAUDE.md
+/docs/design.md
