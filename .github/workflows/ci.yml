@@ -124,3 +124,49 @@ jobs:
             frontend/playwright-report/
             frontend/coverage/
           retention-days: 7
+
+  infra:
+    name: infra
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: "1.16.7"
+          terraform_wrapper: false
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive -diff
+
+      # No backend in CI: the tests use a mocked provider and need no AWS credentials.
+      - name: Initialize from the lock file
+        run: terraform init -backend=false -input=false -lockfile=readonly
+
+      - name: Validate
+        run: terraform validate
+
+      - name: Run Terraform tests
+        run: terraform test
+
+      - name: Check resource types against the $0 allowlist
+        run: bash scripts/check-resource-types.sh
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
+        with:
+          tflint_version: v0.65.0
+
+      - name: TFLint
+        run: tflint --format compact
+
+      - name: Checkov
+        run: docker run --rm -v "$PWD:/tf" bridgecrew/checkov:3.3.30 -d /tf --framework terraform --quiet --compact

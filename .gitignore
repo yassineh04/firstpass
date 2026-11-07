@@ -19,6 +19,21 @@ npm-debug.log*
 *.tsbuildinfo
 *.local
 
+# Terraform (the provider lock file .terraform.lock.hcl is committed)
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
 # Playwright
 playwright-report/
 test-results/
