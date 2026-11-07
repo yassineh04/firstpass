@@ -8,4 +8,6 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.json.schema.validator)
+
+    testImplementation(libs.wiremock.standalone)
 }
