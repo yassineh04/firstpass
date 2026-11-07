@@ -64,7 +64,7 @@ Each structural choice, with the alternatives that were rejected and why, is rec
 
 ## Getting started
 
-Requirements so far: JDK 21, Node.js 22.18 or later, and npm 11 to add or update frontend dependencies (npm 10 fails on the current dependency tree). Gradle itself is not needed: the wrapper downloads the right version. Infrastructure instructions come with its skeleton.
+Requirements so far: JDK 21, Node.js 22.18 or later, and npm 11 to add or update frontend dependencies (npm 10 fails on the current dependency tree). Gradle itself is not needed: the wrapper downloads the right version. For the infrastructure, Terraform 1.16.7, or Docker to run the official images.
 
 ### Backend
 
@@ -87,6 +87,20 @@ npm run test:coverage     # unit tests with the 70 % coverage threshold
 npx playwright install chromium   # once, before the first end-to-end run
 npm run test:e2e          # end-to-end and accessibility (axe) tests
 ```
+
+### Infrastructure
+
+No AWS account is needed at this stage: the Terraform tests use a mocked provider.
+
+```bash
+cd infra
+terraform init -backend=false
+terraform validate
+terraform test
+bash scripts/check-resource-types.sh   # only always-free AWS resource types are allowed
+```
+
+Without a local Terraform install, run the official image instead, for example `docker run --rm -v "$PWD:/infra" -w /infra hashicorp/terraform:1.16.7 test`.
 
 ## AI-assisted development
 
