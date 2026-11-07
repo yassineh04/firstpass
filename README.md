@@ -64,7 +64,17 @@ Each structural choice, with the alternatives that were rejected and why, is rec
 
 ## Getting started
 
-Local setup instructions will be added as the backend, frontend and infrastructure skeletons land in phase 0.
+Requirements so far: JDK 21. Gradle itself is not needed: the wrapper downloads the right version. Frontend and infrastructure instructions come with their skeletons.
+
+### Backend
+
+```bash
+cd backend
+./gradlew build          # compile, test, ktlint, detekt and coverage checks
+./gradlew ktlintFormat   # fix formatting issues
+```
+
+On Windows, run the same commands from Git Bash, or use `gradlew.bat` in PowerShell.
 
 ## AI-assisted development
 
