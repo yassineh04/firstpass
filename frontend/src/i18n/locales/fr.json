@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "FirstPass"
+  },
+  "a11y": {
+    "skipToContent": "Aller au contenu principal"
+  },
+  "language": {
+    "label": "Langue",
+    "names": {
+      "en": "English",
+      "fr": "Français"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Première revue de code par IA pour GitHub",
+      "intro": "FirstPass publie une première revue sur vos pull requests en moins de deux minutes. Il se contente de commenter : vous gardez toutes les décisions.",
+      "status": "Le tableau de bord est en construction."
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "body": "Cette page n'existe pas ou a été déplacée.",
+      "backHome": "Retour à l'accueil"
+    }
+  },
+  "footer": {
+    "tagline": "FirstPass commente les pull requests. Il n'approuve, ne bloque et ne fusionne jamais rien."
+  }
+}

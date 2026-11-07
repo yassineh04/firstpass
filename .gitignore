@@ -15,6 +15,9 @@ node_modules/
 dist/
 coverage/
 npm-debug.log*
+.eslintcache
+*.tsbuildinfo
+*.local
 
 # Playwright
 playwright-report/

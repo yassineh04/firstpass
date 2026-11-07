@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "FirstPass"
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content"
+  },
+  "language": {
+    "label": "Language",
+    "names": {
+      "en": "English",
+      "fr": "Français"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "AI first-pass code review for GitHub",
+      "intro": "FirstPass posts a first review on your pull requests in under two minutes. It only comments: you keep every decision.",
+      "status": "The dashboard is under construction."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "body": "This page does not exist or has moved.",
+      "backHome": "Back to the home page"
+    }
+  },
+  "footer": {
+    "tagline": "FirstPass comments on pull requests. It never approves, blocks or merges."
+  }
+}
