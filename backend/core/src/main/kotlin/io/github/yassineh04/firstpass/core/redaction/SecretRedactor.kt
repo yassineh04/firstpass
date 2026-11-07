@@ -3,9 +3,9 @@ package io.github.yassineh04.firstpass.core.redaction
 import io.github.yassineh04.firstpass.core.diff.AddedLine
 import io.github.yassineh04.firstpass.core.diff.AnnotatedFile
 import io.github.yassineh04.firstpass.core.diff.ContextLine
-import io.github.yassineh04.firstpass.core.diff.DiffLine
 import io.github.yassineh04.firstpass.core.diff.Hunk
 import io.github.yassineh04.firstpass.core.diff.RemovedLine
+import io.github.yassineh04.firstpass.core.diff.withContent
 
 /** Families of secrets detected before anything is sent to a model. [label] appears in `[REDACTED:label]`. */
 enum class SecretType(
@@ -60,13 +60,6 @@ object SecretRedactor {
 
     /** Redacts free text, such as the title or the description of a pull request. */
     fun redactText(text: String): String = LineRedactor.redactLines(text.lines()).joinToString("\n") { it.content }
-
-    private fun DiffLine.withContent(content: String): DiffLine =
-        when (this) {
-            is AddedLine -> copy(content = content)
-            is ContextLine -> copy(content = content)
-            is RemovedLine -> copy(content = content)
-        }
 
     private fun toPatch(hunk: Hunk): String =
         (

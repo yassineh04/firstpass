@@ -53,14 +53,15 @@ class AnnotatedFile(
                 hunk.lines.filterIsInstance<T>().forEach { put(number(it), hunkIndex) }
             }
         }
-
-    private fun renderLine(line: DiffLine): String =
-        when (line) {
-            is AddedLine -> "+ ${line.newLine} | ${line.content}"
-            is ContextLine -> "  ${line.newLine} | ${line.content}"
-            is RemovedLine -> "- | ${line.content}"
-        }
 }
+
+/** One line as the model sees it; shared with the batch planner, which measures rendered text. */
+internal fun renderLine(line: DiffLine): String =
+    when (line) {
+        is AddedLine -> "+ ${line.newLine} | ${line.content}"
+        is ContextLine -> "  ${line.newLine} | ${line.content}"
+        is RemovedLine -> "- | ${line.content}"
+    }
 
 object DiffAnnotator {
     /** Returns null when the file has nothing to review (no patch, or a patch without hunks). */
