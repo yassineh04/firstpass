@@ -64,6 +64,18 @@ Each structural choice, with the alternatives that were rejected and why, is rec
 
 ## Getting started
 
+### Local services and configuration
+
+```bash
+cp .env.example .env      # then fill in the values; .env is never committed
+docker compose up -d      # DynamoDB Local on http://localhost:8000
+docker compose --profile ollama up -d   # optional: Ollama, a local LLM (large download)
+```
+
+The development GitHub App and the webhook relay are described in [docs/github-app-setup.md](docs/github-app-setup.md).
+
+### Requirements
+
 Requirements so far: JDK 21, Node.js 22.18 or later, and npm 11 to add or update frontend dependencies (npm 10 fails on the current dependency tree). Gradle itself is not needed: the wrapper downloads the right version. For the infrastructure, Terraform 1.16.7, or Docker to run the official images.
 
 ### Backend
