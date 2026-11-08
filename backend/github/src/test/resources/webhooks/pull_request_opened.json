@@ -1,0 +1,16 @@
+{
+  "action": "opened",
+  "number": 2,
+  "pull_request": {
+    "number": 2,
+    "state": "open",
+    "draft": false,
+    "merged": false,
+    "head": { "ref": "changes", "sha": "ec26c3e57ca3a959ca5aad62de7213c562f8c821" },
+    "base": { "ref": "master", "sha": "f95f852bd8fca8fcc58a9a2d6c842781e32a215e" },
+    "user": { "login": "Codertocat", "type": "User" }
+  },
+  "repository": { "id": 186853002, "name": "Hello-World", "full_name": "Codertocat/Hello-World", "private": false },
+  "installation": { "id": 1, "node_id": "MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMQ==" },
+  "sender": { "login": "Codertocat", "type": "User" }
+}

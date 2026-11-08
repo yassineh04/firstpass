@@ -1,0 +1,12 @@
+{
+  "action": "created",
+  "installation": {
+    "id": 957387,
+    "account": { "login": "Codertocat", "type": "User" },
+    "repository_selection": "selected"
+  },
+  "repositories": [
+    { "id": 186853002, "name": "Hello-World", "full_name": "Codertocat/Hello-World", "private": false }
+  ],
+  "sender": { "login": "Codertocat", "type": "User" }
+}
