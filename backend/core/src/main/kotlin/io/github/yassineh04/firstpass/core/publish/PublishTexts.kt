@@ -72,6 +72,8 @@ internal class PublishTexts(
     val foundSummary: (String) -> String,
     val unavailableTitle: String,
     val unavailableSummary: String,
+    val outdatedTitle: String,
+    val outdatedSummary: String,
 ) {
     companion object {
         fun of(language: ReviewLanguage): PublishTexts =
@@ -180,6 +182,8 @@ internal class PublishTexts(
                 unavailableSummary =
                     "No AI provider gave a valid answer, so this push was not reviewed. " +
                         "FirstPass will review the next push.",
+                outdatedTitle = "Review skipped",
+                outdatedSummary = "A newer push arrived during the review: FirstPass reviews that push instead.",
             )
 
         private val FRENCH =
@@ -290,6 +294,9 @@ internal class PublishTexts(
                 unavailableSummary =
                     "Aucun fournisseur d'IA n'a donné de réponse valide : ce push n'a pas été relu. " +
                         "FirstPass relira le prochain push.",
+                outdatedTitle = "Revue abandonnée",
+                outdatedSummary =
+                    "Un push plus récent est arrivé pendant la revue : FirstPass relit ce push à la place.",
             )
     }
 }

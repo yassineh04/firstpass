@@ -195,23 +195,25 @@ internal class QuotaRefusal(
     private val pullRequests: PullRequestStateStore,
     private val quota: QuotaPolicy,
 ) {
+    /** Completes [checkRunId] when the review had already started, or creates a completed check run. */
     fun notify(
         job: Job.Review,
         state: PullRequestState,
         language: ReviewLanguage,
         reason: QuotaReason,
+        checkRunId: Long? = null,
     ) {
         val comment = QuotaNotice.comment(reason, language)
         if (quota.shouldPostNotice(state.lastQuotaNoticeDay)) {
             github.postComment(job.installationId, job.repository, job.pullRequest, comment)
             pullRequests.save(state.copy(lastQuotaNoticeDay = quota.today()))
         }
-        github.createCheckRun(
-            job.installationId,
-            job.repository,
-            job.headSha,
-            CheckRunState.Completed(CheckConclusion.NEUTRAL),
-            CheckRunText(QuotaNotice.checkRunTitle(language), comment),
-        )
+        val neutral = CheckRunState.Completed(CheckConclusion.NEUTRAL)
+        val text = CheckRunText(QuotaNotice.checkRunTitle(language), comment)
+        if (checkRunId == null) {
+            github.createCheckRun(job.installationId, job.repository, job.headSha, neutral, text)
+        } else {
+            github.updateCheckRun(job.installationId, job.repository, checkRunId, neutral, text)
+        }
     }
 }

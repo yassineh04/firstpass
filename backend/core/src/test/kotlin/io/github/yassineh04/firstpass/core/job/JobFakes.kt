@@ -1,17 +1,23 @@
 package io.github.yassineh04.firstpass.core.job
 
+import io.github.yassineh04.firstpass.core.diff.DiffFile
 import io.github.yassineh04.firstpass.core.github.CheckRunState
 import io.github.yassineh04.firstpass.core.github.GitHubPort
 import io.github.yassineh04.firstpass.core.github.PullRequestDetails
+import io.github.yassineh04.firstpass.core.github.ReviewSubmission
 import io.github.yassineh04.firstpass.core.publish.CheckRunText
+import io.github.yassineh04.firstpass.core.review.ProviderUsage
 import io.github.yassineh04.firstpass.core.settings.ParsedConfig
 import io.github.yassineh04.firstpass.core.settings.SettingsOverrides
 import io.github.yassineh04.firstpass.core.store.DashboardSettingsStore
+import io.github.yassineh04.firstpass.core.store.FindingRecord
 import io.github.yassineh04.firstpass.core.store.InstallationRecord
 import io.github.yassineh04.firstpass.core.store.InstallationStore
 import io.github.yassineh04.firstpass.core.store.PullRequestState
 import io.github.yassineh04.firstpass.core.store.PullRequestStateStore
 import io.github.yassineh04.firstpass.core.store.RepositoryRecord
+import io.github.yassineh04.firstpass.core.store.ReviewRunRecord
+import io.github.yassineh04.firstpass.core.store.ReviewRunStore
 import io.github.yassineh04.firstpass.core.store.UsageStore
 import io.github.yassineh04.firstpass.core.webhook.Job
 import io.github.yassineh04.firstpass.core.webhook.RepositoryRef
@@ -102,6 +108,41 @@ internal class FakeGitHub : GitHubPort {
         calls += "postComment"
         comments += body
     }
+
+    var files: List<DiffFile> = emptyList()
+    val checkRunUpdates = mutableListOf<Pair<Long, CreatedCheckRun>>()
+    val reviews = mutableListOf<ReviewSubmission>()
+
+    /** What GitHub answers to each review submission in turn; accepted once the list runs out. */
+    val reviewAnswers = ArrayDeque<Boolean>()
+
+    override fun pullRequestFiles(
+        installationId: Long,
+        repository: RepositoryRef,
+        number: Int,
+    ): List<DiffFile> = files.also { calls += "pullRequestFiles" }
+
+    override fun updateCheckRun(
+        installationId: Long,
+        repository: RepositoryRef,
+        checkRunId: Long,
+        state: CheckRunState,
+        text: CheckRunText,
+    ) {
+        calls += "updateCheckRun"
+        checkRunUpdates += checkRunId to CreatedCheckRun("", state, text)
+    }
+
+    override fun publishReview(
+        installationId: Long,
+        repository: RepositoryRef,
+        number: Int,
+        review: ReviewSubmission,
+    ): Boolean {
+        calls += "publishReview"
+        reviews += review
+        return reviewAnswers.removeFirstOrNull() ?: true
+    }
 }
 
 /** Every store in memory, starting with an active installation and an enabled public repository. */
@@ -109,7 +150,8 @@ internal class MemoryStores :
     InstallationStore,
     PullRequestStateStore,
     DashboardSettingsStore,
-    UsageStore {
+    UsageStore,
+    ReviewRunStore {
     val installations = mutableMapOf(42L to InstallationRecord(42, "octo", "User", suspended = false))
     val repositories = mutableMapOf(7L to RepositoryRecord(42, SANDBOX, enabled = true, consentAt = null))
     val states = mutableMapOf<Pair<Long, Int>, PullRequestState>()
@@ -143,5 +185,29 @@ internal class MemoryStores :
         if (used >= limit) return false
         reviewsByDay[installationId to day] = used + 1
         return true
+    }
+
+    val llmCallsByDay = mutableMapOf<String, Int>()
+    val tokensByDay = mutableMapOf<String, Map<String, Int>>()
+    val consumption = mutableListOf<Pair<String, List<ProviderUsage>>>()
+    val runs = mutableListOf<Pair<ReviewRunRecord, List<FindingRecord>>>()
+
+    override fun globalLlmCalls(day: String) = llmCallsByDay[day] ?: 0
+
+    override fun providerTokens(day: String) = tokensByDay[day] ?: emptyMap()
+
+    override fun addConsumption(
+        installationId: Long,
+        day: String,
+        usage: List<ProviderUsage>,
+    ) {
+        consumption += day to usage
+    }
+
+    override fun save(
+        run: ReviewRunRecord,
+        findings: List<FindingRecord>,
+    ) {
+        runs += run to findings
     }
 }
