@@ -13,6 +13,7 @@ import io.kotest.matchers.ints.shouldBeLessThan
 import io.kotest.matchers.ints.shouldBeLessThanOrEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Test
@@ -146,6 +147,39 @@ class PromptBuilderTest {
         shouldThrow<IllegalArgumentException> {
             builder.build(pr.copy(description = "see b0undary1"), listOf(file), 1, 1, boundary = BOUNDARY)
         }
+    }
+
+    @Test
+    fun `draws another boundary when the drawn one appears in untrusted text`() {
+        val draws = ArrayDeque(listOf("Coll1s10n", "fr3shOne1"))
+        val prompt =
+            PromptBuilder(ReviewSettings()).build(
+                pr.copy(title = "Coll1s10n in the title"),
+                listOf(file),
+                batchNumber = 1,
+                batchCount = 1,
+                boundaries = { draws.removeFirst() },
+            )
+
+        prompt.user shouldContain "<<<DIFF_fr3shOne1"
+        prompt.user shouldNotContain "<<<DIFF_Coll1s10n"
+    }
+
+    @Test
+    fun `gives up when every draw collides or is not a valid boundary`() {
+        shouldThrow<IllegalArgumentException> {
+            PromptBuilder(ReviewSettings()).build(pr, listOf(file), 1, 1, boundaries = { "short" })
+        }
+    }
+
+    @Test
+    fun `secure boundaries are 24 letters or digits and differ at each draw`() {
+        val first = BoundarySource.SECURE.next()
+        val second = BoundarySource.SECURE.next()
+
+        first.matches(Regex("[A-Za-z0-9]{24}")) shouldBe true
+        second.matches(Regex("[A-Za-z0-9]{24}")) shouldBe true
+        first shouldNotBe second
     }
 
     @Test
