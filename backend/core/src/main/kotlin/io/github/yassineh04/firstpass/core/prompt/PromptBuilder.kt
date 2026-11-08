@@ -34,10 +34,36 @@ class PromptBuilder(
     ): Prompt {
         require(BOUNDARY.matches(boundary)) { "The boundary must be 8 to 32 letters or digits" }
         val untrusted = untrustedValues(pullRequest, files)
-        require(untrusted.values.none { boundary in it }) { "The boundary appears in untrusted text; draw another one" }
+        require(isAbsent(boundary, untrusted)) { "The boundary appears in untrusted text; draw another one" }
         val user = userMessage(pullRequest.number, untrusted, batchNumber, batchCount, boundary)
         return Prompt(systemPrompt(), user, PROMPT_VERSION)
     }
+
+    /**
+     * Same as [build], with a boundary drawn from [boundaries]. A value that is invalid, or that
+     * appears in untrusted text, is drawn again.
+     */
+    fun build(
+        pullRequest: PullRequestInfo,
+        files: List<AnnotatedFile>,
+        batchNumber: Int,
+        batchCount: Int,
+        boundaries: BoundarySource,
+    ): Prompt {
+        val untrusted = untrustedValues(pullRequest, files)
+        val boundary =
+            generateSequence { boundaries.next() }
+                .take(MAX_DRAWS)
+                .firstOrNull { BOUNDARY.matches(it) && isAbsent(it, untrusted) }
+        requireNotNull(boundary) { "No usable boundary after $MAX_DRAWS draws" }
+        val user = userMessage(pullRequest.number, untrusted, batchNumber, batchCount, boundary)
+        return Prompt(systemPrompt(), user, PROMPT_VERSION)
+    }
+
+    private fun isAbsent(
+        boundary: String,
+        untrusted: Map<String, String>,
+    ): Boolean = untrusted.values.none { boundary in it }
 
     /** Tokens of a prompt without any file, for the batch planner. An upper bound for any boundary. */
     fun overheadTokens(pullRequest: PullRequestInfo): Int {
@@ -122,6 +148,7 @@ class PromptBuilder(
         private const val MAX_DESCRIPTION = 2000
         private const val MAX_INSTRUCTIONS = 1000
         private const val MAX_BATCH_NUMBER = 99
+        private const val MAX_DRAWS = 5
         private const val LONGEST_BOUNDARY = "00000000000000000000000000000000"
 
         private val BOUNDARY = Regex("[A-Za-z0-9]{8,32}")

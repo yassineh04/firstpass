@@ -25,6 +25,9 @@ data class DailyUsage(
 enum class QuotaReason {
     INSTALLATION_REVIEWS,
     GLOBAL_LLM_CALLS,
+
+    /** No provider has enough of its daily token allowance left for the review. */
+    PROVIDER_TOKENS,
 }
 
 sealed interface QuotaDecision {
@@ -106,6 +109,8 @@ object QuotaNotice {
                             QuotaReason.GLOBAL_LLM_CALLS to
                                 "FirstPass reached its daily limit of AI requests, " +
                                 "so it did not review this pull request.",
+                            QuotaReason.PROVIDER_TOKENS to
+                                "FirstPass used up today's AI capacity, so it did not review this pull request.",
                         ),
                     reset = "The limit resets at midnight UTC; the next push after that will be reviewed.",
                 ),
@@ -119,6 +124,8 @@ object QuotaNotice {
                             QuotaReason.GLOBAL_LLM_CALLS to
                                 "FirstPass a atteint sa limite quotidienne de requêtes d'IA " +
                                 "et n'a donc pas relu cette pull request.",
+                            QuotaReason.PROVIDER_TOKENS to
+                                "FirstPass a épuisé sa capacité d'IA du jour et n'a donc pas relu cette pull request.",
                         ),
                     reset = "La limite repart à zéro à minuit UTC ; le prochain push après cette heure sera relu.",
                 ),

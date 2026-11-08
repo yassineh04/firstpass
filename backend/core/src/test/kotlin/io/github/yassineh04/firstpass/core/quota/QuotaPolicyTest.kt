@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotBeBlank
 import org.junit.jupiter.api.Test
 import java.time.Clock
 import java.time.Instant
@@ -81,5 +82,16 @@ class QuotaPolicyTest {
         QuotaNotice.comment(QuotaReason.GLOBAL_LLM_CALLS, ReviewLanguage.FR) shouldContain "minuit UTC"
         QuotaNotice.checkRunTitle(ReviewLanguage.EN) shouldBe "Daily quota reached"
         QuotaNotice.checkRunTitle(ReviewLanguage.FR) shouldBe "Quota du jour atteint"
+    }
+
+    @Test
+    fun `explains every quota reason in both languages, including used-up provider tokens`() {
+        for (reason in QuotaReason.entries) {
+            for (language in ReviewLanguage.entries) {
+                QuotaNotice.comment(reason, language).shouldNotBeBlank()
+            }
+        }
+        QuotaNotice.comment(QuotaReason.PROVIDER_TOKENS, ReviewLanguage.EN) shouldContain "AI capacity"
+        QuotaNotice.comment(QuotaReason.PROVIDER_TOKENS, ReviewLanguage.FR) shouldContain "capacité d'IA"
     }
 }
