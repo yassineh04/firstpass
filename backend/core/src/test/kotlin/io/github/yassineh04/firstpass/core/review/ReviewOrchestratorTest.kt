@@ -37,9 +37,12 @@ class ReviewOrchestratorTest {
     private val overhead = PromptBuilder(ReviewSettings()).overheadTokens(pr)
     private val clock = Clock.fixed(Instant.parse("2026-11-07T15:00:00Z"), ZoneOffset.UTC)
 
-    // Budgets sized from the file sizes below: one big file per batch, or two.
-    private val oneFilePerBatch = ProviderBudget(inputTokensPerBatch = overhead + 700, maxBatches = 6)
-    private val twoFilesPerBatch = ProviderBudget(inputTokensPerBatch = overhead + 1300, maxBatches = 6)
+    // Budgets sized from the estimate of one big file, whatever the estimator's calibration: one big
+    // file per batch, or two. The slack is far smaller than a file, so a third one never fits.
+    private val bigFileTokens = TokenEstimator.estimate(DiffAnnotator.annotate(bigFile(PATH_A)).shouldNotBeNull())
+    private val oneFilePerBatch = ProviderBudget(inputTokensPerBatch = overhead + bigFileTokens + SLACK, maxBatches = 6)
+    private val twoFilesPerBatch =
+        ProviderBudget(inputTokensPerBatch = overhead + 2 * bigFileTokens + SLACK, maxBatches = 6)
 
     @Test
     fun `reviews the files and returns ranked findings, the cleaned model summary and the usage`() {
@@ -337,7 +340,7 @@ class ReviewOrchestratorTest {
 
     private fun smallFile(path: String) = diffFile(path, "fun a() = 1", "fun b() = 2", "fun c() = 3")
 
-    /** About 550 tokens: one fits in [oneFilePerBatch], two fit in [twoFilesPerBatch]. */
+    /** A few hundred tokens: one fits in [oneFilePerBatch], two fit in [twoFilesPerBatch]. */
     private fun bigFile(path: String) = diffFile(path, *Array(20) { "val value$it = \"" + "v".repeat(70) + "\"" })
 
     private fun comment(
@@ -383,6 +386,7 @@ class ReviewOrchestratorTest {
 
     private companion object {
         const val MODEL = "model-x"
+        const val SLACK = 50
         const val PATH_A = "src/main/kotlin/A.kt"
         const val PATH_B = "src/main/kotlin/B.kt"
         const val PATH_C = "src/main/kotlin/C.kt"
