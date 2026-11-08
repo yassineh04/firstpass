@@ -50,7 +50,7 @@ data class ProviderAllowance(
  * themselves are reserved atomically by the storage adapter; this class only decides.
  */
 class QuotaPolicy(
-    private val limits: QuotaLimits,
+    val limits: QuotaLimits,
     private val clock: Clock,
 ) {
     fun today(): LocalDate = LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC)
