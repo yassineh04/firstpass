@@ -1,0 +1,7 @@
+{
+  "title": "Log user lookups",
+  "description": "A non-null assertion replaces the not-found exception: a missing user now fails with a NullPointerException instead of UserNotFoundException.",
+  "expected": [
+    { "path": "src/main/kotlin/com/example/users/UserService.kt", "line": 13, "category": "bug", "severity": "major" }
+  ]
+}

@@ -131,6 +131,36 @@ class CliTest {
     }
 
     @Test
+    fun `evaluates the cases of a folder and writes the Markdown report`() {
+        val cases = Files.createDirectories(dir.resolve("cases"))
+        Files.createDirectories(cases.resolve("clean-one")).also {
+            Files.writeString(it.resolve("diff.patch"), patchAdding(PATH, "val total = 1"))
+            Files.writeString(it.resolve("expected.json"), """{"title": "T", "description": "D", "expected": []}""")
+        }
+        val report = dir.resolve("results/report.md")
+
+        val exit =
+            cli().run(
+                listOf(
+                    "eval",
+                    "--provider",
+                    "fake",
+                    "--cases",
+                    cases.toString(),
+                    "--runs",
+                    "1",
+                    "--output",
+                    report.toString(),
+                ),
+            )
+
+        exit shouldBe 0
+        Files.readString(report) shouldContain "# Evaluation of 2026-11-07"
+        stderr() shouldContain "Precision n/a"
+        stderr() shouldContain "noise 0.0"
+    }
+
+    @Test
     fun `prints the usage on request`() {
         cli().run(listOf("--help")) shouldBe 0
 

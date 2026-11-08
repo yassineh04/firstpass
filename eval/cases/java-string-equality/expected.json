@@ -1,0 +1,7 @@
+{
+  "title": "Let admins delete any document",
+  "description": "Strings are compared with == instead of equals: a role read from the database or a request is usually a different instance, so admins are not recognized.",
+  "expected": [
+    { "path": "src/main/java/com/example/auth/AccessPolicy.java", "line": 9, "category": "bug", "severity": "major" }
+  ]
+}

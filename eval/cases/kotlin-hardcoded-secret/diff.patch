@@ -1,0 +1,15 @@
+diff --git a/src/main/kotlin/com/example/storage/ReportUploader.kt b/src/main/kotlin/com/example/storage/ReportUploader.kt
+new file mode 100644
+index 0000000..4c2d9e1
+--- /dev/null
++++ b/src/main/kotlin/com/example/storage/ReportUploader.kt
+@@ -0,0 +1,9 @@
++package com.example.storage
++
++class ReportUploader(private val client: StorageClient) {
++    private val accessKeyId = "AKIAFIRSTPASSEVAL001"
++
++    fun upload(name: String, bytes: ByteArray) {
++        client.put(bucket = "reports", key = name, body = bytes, accessKeyId = accessKeyId)
++    }
++}

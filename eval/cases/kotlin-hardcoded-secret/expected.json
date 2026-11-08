@@ -1,0 +1,7 @@
+{
+  "title": "Upload reports to storage",
+  "description": "An AWS access key is written in the code. The value is fake, chosen so that the project's secret scanner (gitleaks) does not flag it while FirstPass's redactor does.",
+  "expected": [
+    { "path": "src/main/kotlin/com/example/storage/ReportUploader.kt", "line": 4, "category": "security", "severity": "critical" }
+  ]
+}

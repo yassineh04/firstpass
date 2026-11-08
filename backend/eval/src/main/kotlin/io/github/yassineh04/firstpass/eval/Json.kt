@@ -10,6 +10,20 @@ import tools.jackson.module.kotlin.kotlinModule
 /** The JSON mapper of the command line tools, with Kotlin support. Thread-safe once built. */
 internal val JSON: JsonMapper = jsonMapper { addModule(kotlinModule()) }
 
+/** The names given to a review outcome in the JSON output and in the evaluation report. */
+internal object Outcomes {
+    const val COMPLETED = "completed"
+    const val UNAVAILABLE = "unavailable"
+    const val QUOTA_EXCEEDED = "quota_exceeded"
+
+    fun of(outcome: ReviewOutcome): String =
+        when (outcome) {
+            is ReviewOutcome.Completed -> COMPLETED
+            is ReviewOutcome.Unavailable -> UNAVAILABLE
+            is ReviewOutcome.QuotaExceeded -> QUOTA_EXCEEDED
+        }
+}
+
 /** What the `review` command prints: the outcome, and the report when there is one. */
 internal data class ReviewOutput(
     val outcome: String,
@@ -19,9 +33,9 @@ internal data class ReviewOutput(
     companion object {
         fun of(outcome: ReviewOutcome): ReviewOutput =
             when (outcome) {
-                is ReviewOutcome.Completed -> ReviewOutput("completed", null, outcome.report)
-                is ReviewOutcome.Unavailable -> ReviewOutput("unavailable", null, outcome.report)
-                is ReviewOutcome.QuotaExceeded -> ReviewOutput("quota_exceeded", outcome.reason, null)
+                is ReviewOutcome.Completed -> ReviewOutput(Outcomes.of(outcome), null, outcome.report)
+                is ReviewOutcome.Unavailable -> ReviewOutput(Outcomes.of(outcome), null, outcome.report)
+                is ReviewOutcome.QuotaExceeded -> ReviewOutput(Outcomes.of(outcome), outcome.reason, null)
             }
     }
 }

@@ -1,0 +1,7 @@
+{
+  "title": "Find users by name",
+  "description": "The name is concatenated into the SQL text: SQL injection. It needs a bind parameter.",
+  "expected": [
+    { "path": "src/main/kotlin/com/example/users/UserRepository.kt", "line": 11, "category": "security", "severity": "critical" }
+  ]
+}

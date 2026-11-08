@@ -1,0 +1,7 @@
+{
+  "title": "Show recent order summaries",
+  "description": "One customer query per order (N+1 queries). The customers should be loaded in one query, for example by their ids.",
+  "expected": [
+    { "path": "src/main/kotlin/com/example/orders/OrderSummaryService.kt", "line": 16, "category": "performance", "severity": "major" }
+  ]
+}
