@@ -278,4 +278,8 @@ object CheckRunTexts {
 
     fun unavailable(language: ReviewLanguage): CheckRunText =
         PublishTexts.of(language).let { CheckRunText(it.unavailableTitle, it.unavailableSummary) }
+
+    /** A newer push arrived during the review: this head is left to the job of that push. */
+    fun outdated(language: ReviewLanguage): CheckRunText =
+        PublishTexts.of(language).let { CheckRunText(it.outdatedTitle, it.outdatedSummary) }
 }

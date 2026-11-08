@@ -1,5 +1,6 @@
 package io.github.yassineh04.firstpass.core.github
 
+import io.github.yassineh04.firstpass.core.diff.DiffFile
 import io.github.yassineh04.firstpass.core.publish.CheckRunText
 import io.github.yassineh04.firstpass.core.review.PullRequestFacts
 import io.github.yassineh04.firstpass.core.settings.ParsedConfig
@@ -72,4 +73,46 @@ interface GitHubPort {
         number: Int,
         body: String,
     )
+
+    /** Every changed file of the pull request, with its patch when GitHub gives one. */
+    fun pullRequestFiles(
+        installationId: Long,
+        repository: RepositoryRef,
+        number: Int,
+    ): List<DiffFile>
+
+    fun updateCheckRun(
+        installationId: Long,
+        repository: RepositoryRef,
+        checkRunId: Long,
+        state: CheckRunState,
+        text: CheckRunText,
+    )
+
+    /**
+     * Publishes one review of type COMMENT, the only type FirstPass ever sends (FR-10): the port
+     * has no way to approve or to request changes. False when GitHub refuses the inline comments
+     * (HTTP 422), so that the caller can publish again without them.
+     */
+    fun publishReview(
+        installationId: Long,
+        repository: RepositoryRef,
+        number: Int,
+        review: ReviewSubmission,
+    ): Boolean
 }
+
+/** One inline comment on the new side of the diff; [startLine] is set for a comment on several lines. */
+data class InlineComment(
+    val path: String,
+    val line: Int,
+    val startLine: Int?,
+    val body: String,
+)
+
+/** A review on [commitId], the head that was reviewed. */
+data class ReviewSubmission(
+    val commitId: String,
+    val body: String,
+    val comments: List<InlineComment>,
+)
