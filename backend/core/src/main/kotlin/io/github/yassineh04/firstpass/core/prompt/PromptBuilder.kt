@@ -146,7 +146,7 @@ class PromptBuilder(
 
         private const val MAX_TITLE = 300
         private const val MAX_DESCRIPTION = 2000
-        private const val MAX_INSTRUCTIONS = 1000
+        internal const val MAX_INSTRUCTIONS = 1000
         private const val MAX_BATCH_NUMBER = 99
         private const val MAX_DRAWS = 5
         private const val LONGEST_BOUNDARY = "00000000000000000000000000000000"
