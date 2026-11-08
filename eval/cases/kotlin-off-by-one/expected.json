@@ -1,0 +1,7 @@
+{
+  "title": "Compute the cart subtotal with a loop",
+  "description": "The closed range 0..items.size reads one item past the end of the list: IndexOutOfBoundsException on every call.",
+  "expected": [
+    { "path": "src/main/kotlin/com/example/cart/CartTotals.kt", "line": 8, "category": "bug", "severity": "major" }
+  ]
+}

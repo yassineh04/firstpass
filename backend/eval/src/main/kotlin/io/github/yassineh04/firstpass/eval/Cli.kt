@@ -2,6 +2,7 @@ package io.github.yassineh04.firstpass.eval
 
 import io.github.yassineh04.firstpass.core.diff.DiffFile
 import io.github.yassineh04.firstpass.core.diff.UnifiedDiffParser
+import io.github.yassineh04.firstpass.core.prompt.PromptBuilder
 import io.github.yassineh04.firstpass.core.quota.QuotaLimits
 import io.github.yassineh04.firstpass.core.quota.QuotaPolicy
 import io.github.yassineh04.firstpass.core.review.PullRequestInfo
@@ -14,6 +15,8 @@ import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
+import java.time.LocalDate
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * The command line of the eval module. `review` sends one patch file through the same review as
@@ -32,6 +35,10 @@ internal class Cli(
             when (args.firstOrNull()) {
                 "review" -> {
                     review(ReviewArguments.parse(args.drop(1)))
+                }
+
+                "eval" -> {
+                    evaluate(EvalArguments.parse(args.drop(1)))
                 }
 
                 "help", "--help", "-h" -> {
@@ -56,8 +63,7 @@ internal class Cli(
 
     private fun review(arguments: ReviewArguments): Int {
         val files = readPatch(arguments.patch)
-        val provider =
-            arguments.provider ?: settings["FIRSTPASS_LLM_PROVIDER"]?.trim()?.ifEmpty { null } ?: DEFAULT_PROVIDER
+        val provider = providerName(arguments.provider)
         val orchestrator =
             ReviewOrchestrator(chain(provider, arguments.model, settings), QuotaPolicy(QuotaLimits(), clock))
         val title = arguments.title ?: "Local review of ${arguments.patch.fileName}"
@@ -74,6 +80,39 @@ internal class Cli(
         return if (outcome is ReviewOutcome.Completed) EXIT_OK else EXIT_NOT_REVIEWED
     }
 
+    private fun evaluate(arguments: EvalArguments): Int {
+        val cases = CaseLoader.load(arguments.cases)
+        val provider = providerName(arguments.provider)
+        val pauseSeconds = arguments.pauseSeconds ?: if (provider == DEFAULT_PROVIDER) 0 else REMOTE_PAUSE_SECONDS
+        val pacer = Pacer(pauseSeconds.seconds)
+        val calls = mutableListOf<CallRecord>()
+        val providers =
+            chain(provider, arguments.model, settings).map {
+                it.copy(llm = InstrumentedLlm(it.name, it.llm, pacer, calls))
+            }
+        err.println("Evaluating ${cases.size} cases, ${arguments.runs} runs each, with $provider...")
+        val runs = EvalRunner(providers, clock).run(cases, arguments.runs)
+        val model =
+            runs
+                .flatMap { it.models }
+                .distinct()
+                .joinToString(", ")
+                .ifEmpty { provider }
+        val evalSettings =
+            EvalSettings(LocalDate.now(clock), provider, model, PromptBuilder.PROMPT_VERSION, arguments.runs)
+        val output = arguments.output ?: Path.of("eval", "results", EvalReport.fileName(evalSettings))
+        writeFile(output, EvalReport.markdown(evalSettings, runs, calls))
+        val metrics = Metrics.of(runs)
+        err.println(
+            "Precision ${Numbers.percent(metrics.precision)}, recall ${Numbers.percent(metrics.recall)}, " +
+                "noise ${Numbers.decimal(metrics.noise)} findings per clean case.",
+        )
+        return if (runs.all { it.outcome == Outcomes.COMPLETED }) EXIT_OK else EXIT_NOT_REVIEWED
+    }
+
+    private fun providerName(option: String?): String =
+        option ?: settings["FIRSTPASS_LLM_PROVIDER"]?.trim()?.ifEmpty { null } ?: DEFAULT_PROVIDER
+
     private fun readPatch(patch: Path): List<DiffFile> {
         if (!Files.isRegularFile(patch)) throw CliError("Patch file not found: ${patch.toAbsolutePath()}")
         val files = UnifiedDiffParser.parse(TextFiles.read(patch))
@@ -85,13 +124,16 @@ internal class Cli(
         json: String,
         output: Path?,
     ) {
-        if (output == null) {
-            out.println(json)
-        } else {
-            output.toAbsolutePath().parent?.let { Files.createDirectories(it) }
-            Files.writeString(output, json + "\n", Charsets.UTF_8)
-            err.println("Report written to ${output.toAbsolutePath()}")
-        }
+        if (output == null) out.println(json) else writeFile(output, json + "\n")
+    }
+
+    private fun writeFile(
+        file: Path,
+        text: String,
+    ) {
+        file.toAbsolutePath().parent?.let { Files.createDirectories(it) }
+        Files.writeString(file, text, Charsets.UTF_8)
+        err.println("Report written to ${file.toAbsolutePath()}")
     }
 
     private fun describe(outcome: ReviewOutcome): String =
@@ -121,20 +163,32 @@ internal class Cli(
         const val DEFAULT_PROVIDER = "fake"
         const val LOCAL_PULL_REQUEST = 1
 
+        /** Gemini's free tier allows 15 requests a minute: one call every 4 seconds stays under it. */
+        const val REMOTE_PAUSE_SECONDS = 4
+
         val USAGE =
             """
-            Usage: review <file.patch> [options]
+            Usage:
+              review <file.patch> [options]   review one git diff and print the result as JSON
+              eval [options]                  measure review quality on the cases in eval/cases
 
-            Reviews a git diff with the same pipeline as the GitHub App and prints the result as JSON.
-            Create the patch at the repository root with: git diff --output=changes.patch
+            Create a patch at the repository root with: git diff --output=changes.patch
 
-            Options:
+            Options of both commands:
               --provider <name>   fake, ollama, gemini or groq (default: FIRSTPASS_LLM_PROVIDER, else fake)
               --model <name>      model of the main provider (required for ollama unless OLLAMA_MODEL is set)
+              --output <file>     file to write (review: JSON instead of the console; eval: the Markdown report)
+
+            Options of review:
               --title <text>      pull request title given to the model
               --language <code>   language of the comments: en (default) or fr
-              --output <file>     write the JSON to this UTF-8 file instead of the console
 
+            Options of eval:
+              --runs <n>          runs of each case (default: 2)
+              --cases <folder>    folder of the cases (default: eval/cases)
+              --pause <seconds>   pause between model calls (default: 4 for a remote provider, 0 for fake)
+
+            The eval report goes to eval/results/<date>-<model>.md unless --output is given.
             Settings come from environment variables first, then from the .env file at the repository root.
             """.trimIndent()
     }

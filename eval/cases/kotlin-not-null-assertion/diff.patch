@@ -1,0 +1,15 @@
+diff --git a/src/main/kotlin/com/example/users/UserService.kt b/src/main/kotlin/com/example/users/UserService.kt
+index 3f1c2a9..8b7d0e4 100644
+--- a/src/main/kotlin/com/example/users/UserService.kt
++++ b/src/main/kotlin/com/example/users/UserService.kt
+@@ -10,7 +10,9 @@ class UserService(
+     private val auditLog: AuditLog,
+ ) {
+     fun findUser(id: String): User {
+-        return repository.findById(id) ?: throw UserNotFoundException(id)
++        val user = repository.findById(id)!!
++        auditLog.record("lookup", user.id)
++        return user
+     }
+     fun displayName(id: String): String = findUser(id).name
+ }

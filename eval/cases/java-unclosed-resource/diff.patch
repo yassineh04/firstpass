@@ -1,0 +1,14 @@
+diff --git a/src/main/java/com/example/config/VersionReader.java b/src/main/java/com/example/config/VersionReader.java
+index 1c8e2f4..6a0d7b9 100644
+--- a/src/main/java/com/example/config/VersionReader.java
++++ b/src/main/java/com/example/config/VersionReader.java
+@@ -12,4 +12,9 @@ public final class VersionReader {
+     public String defaultVersion() {
+         return "0.0.0";
+     }
++    public String readVersion(Path file) throws IOException {
++        BufferedReader reader = Files.newBufferedReader(file);
++        String version = reader.readLine();
++        return version == null ? defaultVersion() : version.trim();
++    }
+ }

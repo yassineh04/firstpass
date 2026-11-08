@@ -1,0 +1,13 @@
+diff --git a/src/main/kotlin/com/example/billing/InvoiceFormatter.kt b/src/main/kotlin/com/example/billing/InvoiceFormatter.kt
+index 2e7a9c4..f05b318 100644
+--- a/src/main/kotlin/com/example/billing/InvoiceFormatter.kt
++++ b/src/main/kotlin/com/example/billing/InvoiceFormatter.kt
+@@ -4,6 +4,6 @@ import com.example.money.MoneyFormatter
+ class InvoiceFormatter(private val money: MoneyFormatter) {
+     fun format(invoice: Invoice): String {
+-        val amt = money.format(invoice.total, invoice.currency)
+-        return "Invoice ${invoice.number}: $amt"
++        val formattedTotal = money.format(invoice.total, invoice.currency)
++        return "Invoice ${invoice.number}: $formattedTotal"
+     }
+ }

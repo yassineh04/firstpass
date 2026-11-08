@@ -1,0 +1,5 @@
+{
+  "title": "Extract the base shipping cost",
+  "description": "An expression moves to a private function with the same logic. Behavior is unchanged: any finding is a false positive.",
+  "expected": []
+}

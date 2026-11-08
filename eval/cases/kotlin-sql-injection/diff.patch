@@ -1,0 +1,9 @@
+diff --git a/src/main/kotlin/com/example/users/UserRepository.kt b/src/main/kotlin/com/example/users/UserRepository.kt
+index 0d4f6e8..c27a915 100644
+--- a/src/main/kotlin/com/example/users/UserRepository.kt
++++ b/src/main/kotlin/com/example/users/UserRepository.kt
+@@ -9,2 +9,4 @@ class UserRepository(private val jdbc: JdbcTemplate) {
+     fun count(): Int = jdbc.queryForObject("SELECT COUNT(*) FROM users", Int::class.java) ?: 0
++    fun findByName(name: String): List<Map<String, Any>> =
++        jdbc.queryForList("SELECT id, name, email FROM users WHERE name = '" + name + "'")
+ }

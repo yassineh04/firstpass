@@ -1,0 +1,7 @@
+{
+  "title": "Read the version from a file",
+  "description": "The reader is never closed: each call leaks a file handle. It needs try-with-resources.",
+  "expected": [
+    { "path": "src/main/java/com/example/config/VersionReader.java", "line": 16, "category": "reliability", "severity": "major" }
+  ]
+}

@@ -1,0 +1,16 @@
+diff --git a/src/main/kotlin/com/example/cart/CartTotals.kt b/src/main/kotlin/com/example/cart/CartTotals.kt
+index 5e0b7c1..a91d3f2 100644
+--- a/src/main/kotlin/com/example/cart/CartTotals.kt
++++ b/src/main/kotlin/com/example/cart/CartTotals.kt
+@@ -5,6 +5,10 @@ import java.math.BigDecimal
+ object CartTotals {
+     fun subtotal(items: List<CartItem>): BigDecimal {
+-        return items.fold(BigDecimal.ZERO) { sum, item -> sum + item.price * item.quantity.toBigDecimal() }
++        var total = BigDecimal.ZERO
++        for (i in 0..items.size) {
++            total += items[i].price * items[i].quantity.toBigDecimal()
++        }
++        return total
+     }
+     fun isEmpty(items: List<CartItem>): Boolean = items.isEmpty()
+ }

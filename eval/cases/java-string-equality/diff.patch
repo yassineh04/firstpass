@@ -1,0 +1,13 @@
+diff --git a/src/main/java/com/example/auth/AccessPolicy.java b/src/main/java/com/example/auth/AccessPolicy.java
+index 77c0a12..b3e94d5 100644
+--- a/src/main/java/com/example/auth/AccessPolicy.java
++++ b/src/main/java/com/example/auth/AccessPolicy.java
+@@ -8,5 +8,8 @@ public final class AccessPolicy {
+     public boolean canDelete(User user, Document document) {
++        if (user.role() == "admin") {
++            return true;
++        }
+         return document.ownerId().equals(user.id());
+     }
+     public boolean canRead(User user, Document document) {
+         return document.isPublic() || canDelete(user, document);

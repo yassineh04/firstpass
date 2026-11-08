@@ -1,0 +1,5 @@
+{
+  "title": "Rename a variable in the invoice formatter",
+  "description": "A local variable gets a clearer name. Behavior is unchanged: any finding is a false positive.",
+  "expected": []
+}

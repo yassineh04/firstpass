@@ -102,6 +102,8 @@ cd backend
 
 Settings come from environment variables first, then from `.env`. With `--provider gemini`, Groq is used as a fallback when `GROQ_API_KEY` is set. Use `--output review.json` to write the result to a UTF-8 file, which keeps accented characters intact in Windows consoles.
 
+To measure review quality on the cases with known problems in [eval/](eval/README.md), run `./gradlew -q :eval:run --args="eval --provider gemini"`. It reports precision, recall and noise in `eval/results/<date>-<model>.md`.
+
 ### Frontend
 
 ```bash

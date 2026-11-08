@@ -1,0 +1,7 @@
+{
+  "title": "Save profiles from the settings page",
+  "description": "fetch is not awaited: response is a Promise, response.ok is undefined, so every save throws even when it succeeds.",
+  "expected": [
+    { "path": "frontend/src/api/profile.ts", "line": 9, "category": "bug", "severity": "major" }
+  ]
+}

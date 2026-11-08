@@ -1,0 +1,14 @@
+diff --git a/src/main/kotlin/com/example/orders/OrderSummaryService.kt b/src/main/kotlin/com/example/orders/OrderSummaryService.kt
+index 9a3e5d0..e18c4b7 100644
+--- a/src/main/kotlin/com/example/orders/OrderSummaryService.kt
++++ b/src/main/kotlin/com/example/orders/OrderSummaryService.kt
+@@ -11,4 +11,9 @@ class OrderSummaryService(
+     private val customers: CustomerRepository,
+ ) {
+     fun recentOrderCount(): Int = orders.findRecent().size
++    fun recentSummaries(): List<OrderSummary> =
++        orders.findRecent().map { order ->
++            val customer = customers.findById(order.customerId)
++            OrderSummary(order.id, customer?.name ?: "unknown", order.total)
++        }
+ }

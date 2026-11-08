@@ -16,42 +16,25 @@ internal data class ReviewArguments(
         private val OPTIONS = setOf("--provider", "--model", "--title", "--language", "--output")
 
         fun parse(args: List<String>): ReviewArguments {
-            val options = mutableMapOf<String, String>()
-            val positional = mutableListOf<String>()
-            var index = 0
-            while (index < args.size) {
-                if (args[index].startsWith("--")) {
-                    options[args[index]] = valueAfter(args, index)
-                    index += 2
-                } else {
-                    positional += args[index]
-                    index++
-                }
-            }
+            val parsed = CommandLine.parse(args, OPTIONS)
             val patch =
-                when (positional.size) {
+                when (parsed.positional.size) {
                     0 -> throw CliError("Give the patch file to review, for example: review changes.patch")
-                    1 -> positional.single()
-                    else -> throw CliError("Give only one patch file at a time, got: ${positional.joinToString(" ")}")
+
+                    1 -> parsed.positional.single()
+
+                    else -> throw CliError(
+                        "Give only one patch file at a time, got: ${parsed.positional.joinToString(" ")}",
+                    )
                 }
             return ReviewArguments(
                 patch = Path.of(patch),
-                provider = options["--provider"],
-                model = options["--model"],
-                title = options["--title"],
-                language = options["--language"]?.let(::language) ?: ReviewLanguage.EN,
-                output = options["--output"]?.let { Path.of(it) },
+                provider = parsed.options["--provider"],
+                model = parsed.options["--model"],
+                title = parsed.options["--title"],
+                language = parsed.options["--language"]?.let(::language) ?: ReviewLanguage.EN,
+                output = parsed.options["--output"]?.let { Path.of(it) },
             )
-        }
-
-        private fun valueAfter(
-            args: List<String>,
-            index: Int,
-        ): String {
-            val option = args[index]
-            if (option !in OPTIONS) throw CliError("Unknown option: $option")
-            return args.getOrNull(index + 1)?.takeUnless { it.startsWith("--") }
-                ?: throw CliError("Missing value after $option")
         }
 
         private fun language(value: String): ReviewLanguage =
