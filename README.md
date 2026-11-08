@@ -2,7 +2,7 @@
 
 A GitHub App that posts a first-pass AI code review on pull requests in under two minutes. It only comments: it never approves, blocks, merges or pushes. Humans keep the decision.
 
-> **Status: early development (phase 0, foundations).** The app is not installable yet. This README grows with each phase.
+> **Status: early development (phase 1, review core).** The app is not installable yet, but a patch file can already be reviewed locally (see [Review a patch locally](#review-a-patch-locally)). This README grows with each phase.
 
 ## Why
 
@@ -88,6 +88,20 @@ cd backend
 
 On Windows, run the same commands from Git Bash, or use `gradlew.bat` in PowerShell.
 
+### Review a patch locally
+
+The `eval` module runs the same review pipeline as the app on a git diff and prints the result as JSON. Paths are relative to the repository root.
+
+```bash
+git diff --output=changes.patch     # at the repository root
+cd backend
+./gradlew -q :eval:run --args="review changes.patch"                     # fake provider, no network
+./gradlew -q :eval:run --args="review changes.patch --provider gemini"   # needs GEMINI_API_KEY in .env
+./gradlew -q :eval:run --args="--help"                                   # every option
+```
+
+Settings come from environment variables first, then from `.env`. With `--provider gemini`, Groq is used as a fallback when `GROQ_API_KEY` is set. Use `--output review.json` to write the result to a UTF-8 file, which keeps accented characters intact in Windows consoles.
+
 ### Frontend
 
 ```bash
@@ -124,4 +138,4 @@ Not licensed yet. An open-source license will be added before v1.0.0.
 
 ## En français
 
-FirstPass est une GitHub App qui publie une première revue de code par IA sur chaque pull request, en moins de deux minutes. Elle se contente de commenter : elle n'approuve, ne bloque, ne fusionne et ne pousse jamais rien, et la décision reste humaine. Le projet tourne à 0 $ par mois sur les offres gratuites d'AWS et des fournisseurs d'IA. Le dashboard est bilingue et vise la conformité WCAG 2.1 AA. Le projet est en phase 0 (fondations) : l'application n'est pas encore installable.
+FirstPass est une GitHub App qui publie une première revue de code par IA sur chaque pull request, en moins de deux minutes. Elle se contente de commenter : elle n'approuve, ne bloque, ne fusionne et ne pousse jamais rien, et la décision reste humaine. Le projet tourne à 0 $ par mois sur les offres gratuites d'AWS et des fournisseurs d'IA. Le dashboard est bilingue et vise la conformité WCAG 2.1 AA. Le projet est en phase 1 (cœur de revue) : l'application n'est pas encore installable, mais un fichier de diff peut déjà être relu en local avec le module `eval`.
