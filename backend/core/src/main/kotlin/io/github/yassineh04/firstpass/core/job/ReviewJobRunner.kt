@@ -236,6 +236,7 @@ class ReviewJobRunner(
                 headSha = job.headSha,
                 trigger = job.trigger,
                 status = status,
+                receivedAt = job.receivedAt,
                 startedAt = context.startedAt,
                 durationMs = Duration.between(context.startedAt, clock.instant()).toMillis(),
                 usage = review?.report?.usage.orEmpty(),

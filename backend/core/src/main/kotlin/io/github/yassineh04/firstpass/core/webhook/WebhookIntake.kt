@@ -1,5 +1,9 @@
 package io.github.yassineh04.firstpass.core.webhook
 
+import java.time.Clock
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 /** Reads the payload of one event; the github adapter implements it with a JSON library. */
 fun interface WebhookEventParser {
     fun parse(
@@ -14,6 +18,7 @@ interface DeliveryStore {
     fun markReceived(
         deliveryId: String,
         event: String,
+        receivedAt: Instant,
     ): Boolean
 
     /** Forgets [deliveryId] after a failed hand-off, so that a manual redelivery is not taken for a duplicate. */
@@ -71,16 +76,18 @@ object WebhookRouter {
     /** The job for [event], or null when its action needs no work. */
     fun route(
         deliveryId: String,
+        receivedAt: Instant,
         event: WebhookEvent,
     ): Job? =
         when (event) {
-            is WebhookEvent.PullRequest -> pullRequest(deliveryId, event)
-            is WebhookEvent.Installation -> installation(deliveryId, event)
-            is WebhookEvent.InstallationRepositories -> repositories(deliveryId, event)
+            is WebhookEvent.PullRequest -> pullRequest(deliveryId, receivedAt, event)
+            is WebhookEvent.Installation -> installation(deliveryId, receivedAt, event)
+            is WebhookEvent.InstallationRepositories -> repositories(deliveryId, receivedAt, event)
         }
 
     private fun pullRequest(
         deliveryId: String,
+        receivedAt: Instant,
         event: WebhookEvent.PullRequest,
     ): Job? {
         val trigger = REVIEW_TRIGGERS[event.action]
@@ -88,6 +95,7 @@ object WebhookRouter {
             trigger != null -> {
                 Job.Review(
                     deliveryId,
+                    receivedAt,
                     event.installationId,
                     event.repository,
                     event.number,
@@ -98,7 +106,14 @@ object WebhookRouter {
             }
 
             event.action == "closed" -> {
-                Job.PullRequestClosed(deliveryId, event.installationId, event.repository, event.number, event.merged)
+                Job.PullRequestClosed(
+                    deliveryId,
+                    receivedAt,
+                    event.installationId,
+                    event.repository,
+                    event.number,
+                    event.merged,
+                )
             }
 
             else -> {
@@ -109,11 +124,13 @@ object WebhookRouter {
 
     private fun installation(
         deliveryId: String,
+        receivedAt: Instant,
         event: WebhookEvent.Installation,
     ): Job? =
         INSTALLATION_CHANGES[event.action]?.let { change ->
             Job.Installation(
                 deliveryId,
+                receivedAt,
                 event.installationId,
                 change,
                 event.accountLogin,
@@ -124,12 +141,14 @@ object WebhookRouter {
 
     private fun repositories(
         deliveryId: String,
+        receivedAt: Instant,
         event: WebhookEvent.InstallationRepositories,
     ): Job? =
         when (event.action) {
             "added" -> {
                 Job.Installation(
                     deliveryId,
+                    receivedAt,
                     event.installationId,
                     InstallationChange.REPOSITORIES_ADDED,
                     null,
@@ -141,6 +160,7 @@ object WebhookRouter {
             "removed" -> {
                 Job.Installation(
                     deliveryId,
+                    receivedAt,
                     event.installationId,
                     InstallationChange.REPOSITORIES_REMOVED,
                     null,
@@ -165,6 +185,7 @@ class WebhookIntake(
     private val parser: WebhookEventParser,
     private val deliveries: DeliveryStore,
     private val jobs: JobPublisher,
+    private val clock: Clock,
 ) {
     fun receive(request: WebhookRequest): WebhookOutcome {
         val event = request.header(EVENT_HEADER)
@@ -198,7 +219,9 @@ class WebhookIntake(
             }
 
             is ParsedWebhook.Handled -> {
-                WebhookRouter.route(delivery, parsed.event)?.let { dispatch(event, delivery, it) }
+                // Milliseconds are enough, and keep the time the same once stored and read back.
+                val receivedAt = clock.instant().truncatedTo(ChronoUnit.MILLIS)
+                WebhookRouter.route(delivery, receivedAt, parsed.event)?.let { dispatch(event, delivery, it) }
                     ?: WebhookOutcome.IGNORED
             }
         }
@@ -209,7 +232,7 @@ class WebhookIntake(
         job: Job,
     ): WebhookOutcome =
         when {
-            !deliveries.markReceived(delivery, event) -> {
+            !deliveries.markReceived(delivery, event, job.receivedAt) -> {
                 WebhookOutcome.DUPLICATE
             }
 

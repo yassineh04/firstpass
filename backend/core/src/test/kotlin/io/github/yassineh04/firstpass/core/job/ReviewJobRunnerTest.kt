@@ -106,6 +106,8 @@ class ReviewJobRunnerTest {
         val (run, findings) = stores.runs.single()
         run.status shouldBe RunStatus.PUBLISHED
         run.runId shouldBe "delivery-1"
+        run.receivedAt shouldBe RECEIVED_AT
+        run.startedAt shouldBe now
         run.findingsPosted shouldBe 1
         run.findingsSummarized shouldBe 0
         val state = stores.states.getValue(7L to 3)

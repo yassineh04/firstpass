@@ -48,6 +48,27 @@ interface InstallationStore {
         installationId: Long,
         repoId: Long,
     ): RepositoryRecord?
+
+    /** Every repository recorded for [installationId] (design 8, access pattern 1). */
+    fun repositories(installationId: Long): List<RepositoryRecord>
+
+    /** Creates or replaces the installation itself; its repositories are left as they are. */
+    fun saveInstallation(installation: InstallationRecord)
+
+    /** Records [repository] unless it is already known, so that a recorded consent is never lost. False when known. */
+    fun addRepository(repository: RepositoryRecord): Boolean
+
+    /**
+     * Deletes the repository and everything stored about it: dashboard settings, pull request
+     * states, review runs and their findings (FR-02). Nothing happens for an unknown repository.
+     */
+    fun purgeRepository(
+        installationId: Long,
+        repoId: Long,
+    )
+
+    /** Deletes the installation itself; its repositories are purged one by one with [purgeRepository]. */
+    fun deleteInstallation(installationId: Long)
 }
 
 interface PullRequestStateStore {
@@ -96,7 +117,11 @@ enum class RunStatus {
     OUTDATED,
 }
 
-/** One review run (design section 8). Its id is the delivery id, so that a replayed job overwrites it. */
+/**
+ * One review run (design section 8). Its id is the delivery id and its place in the history the
+ * time the webhook was received ([receivedAt]): both stay the same when the job is replayed, so a
+ * replayed job overwrites its run instead of adding one.
+ */
 data class ReviewRunRecord(
     val runId: String,
     val repoId: Long,
@@ -104,6 +129,7 @@ data class ReviewRunRecord(
     val headSha: String,
     val trigger: ReviewTrigger,
     val status: RunStatus,
+    val receivedAt: Instant,
     val startedAt: Instant,
     val durationMs: Long,
     val usage: List<ProviderUsage>,

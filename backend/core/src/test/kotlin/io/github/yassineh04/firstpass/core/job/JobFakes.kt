@@ -22,19 +22,26 @@ import io.github.yassineh04.firstpass.core.store.UsageStore
 import io.github.yassineh04.firstpass.core.webhook.Job
 import io.github.yassineh04.firstpass.core.webhook.RepositoryRef
 import io.github.yassineh04.firstpass.core.webhook.ReviewTrigger
+import java.time.Instant
 
 internal val SANDBOX = RepositoryRef(id = 7, fullName = "octo/sandbox", private = false)
 
-internal fun reviewJob(headSha: String = "head1") =
-    Job.Review(
-        "delivery-1",
-        installationId = 42,
-        SANDBOX,
-        pullRequest = 3,
-        headSha = headSha,
-        baseSha = "base1",
-        ReviewTrigger.OPENED,
-    )
+/** When GitHub's webhook for the test jobs arrived: a little before the jobs run. */
+internal val RECEIVED_AT: Instant = Instant.parse("2026-11-08T09:59:58.250Z")
+
+internal fun reviewJob(
+    headSha: String = "head1",
+    trigger: ReviewTrigger = ReviewTrigger.OPENED,
+) = Job.Review(
+    "delivery-1",
+    RECEIVED_AT,
+    installationId = 42,
+    SANDBOX,
+    pullRequest = 3,
+    headSha = headSha,
+    baseSha = "base1",
+    trigger,
+)
 
 internal fun pullRequestDetails(
     open: Boolean = true,
@@ -164,6 +171,33 @@ internal class MemoryStores :
         installationId: Long,
         repoId: Long,
     ) = repositories[repoId]?.takeIf { it.installationId == installationId }
+
+    /** The repositories purged, in order. */
+    val purged = mutableListOf<Long>()
+
+    override fun repositories(installationId: Long) = repositories.values.filter { it.installationId == installationId }
+
+    override fun saveInstallation(installation: InstallationRecord) {
+        installations[installation.installationId] = installation
+    }
+
+    override fun addRepository(repository: RepositoryRecord): Boolean =
+        repositories.putIfAbsent(repository.repository.id, repository) == null
+
+    override fun purgeRepository(
+        installationId: Long,
+        repoId: Long,
+    ) {
+        if (repositories[repoId]?.installationId == installationId) repositories.remove(repoId)
+        states.keys.removeIf { it.first == repoId }
+        dashboardSettings.remove(repoId)
+        runs.removeIf { it.first.repoId == repoId }
+        purged += repoId
+    }
+
+    override fun deleteInstallation(installationId: Long) {
+        installations.remove(installationId)
+    }
 
     override fun state(
         repoId: Long,
