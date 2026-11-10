@@ -132,7 +132,7 @@ Without a local Terraform install, run the official image instead, for example `
 
 ## AI-assisted development
 
-This project is built with an AI coding assistant. [AI_USAGE.md](AI_USAGE.md) records what was generated, what was reviewed or changed by hand, and how each part was verified.
+This project is built with an AI coding assistant used as a pair programmer. The maintainer reviews, tests and commits every change.
 
 ## License
 
