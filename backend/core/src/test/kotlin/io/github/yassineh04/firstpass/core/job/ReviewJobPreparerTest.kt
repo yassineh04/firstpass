@@ -15,6 +15,7 @@ import io.github.yassineh04.firstpass.core.settings.ParsedConfig
 import io.github.yassineh04.firstpass.core.settings.ReviewLanguage
 import io.github.yassineh04.firstpass.core.settings.SettingsOverrides
 import io.github.yassineh04.firstpass.core.store.PullRequestState
+import io.github.yassineh04.firstpass.core.webhook.ReviewTrigger
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
@@ -70,6 +71,21 @@ class ReviewJobPreparerTest {
         fixture.github.checkRuns shouldContainExactly
             listOf(CreatedCheckRun("head1", CheckRunState.InProgress, CheckRunTexts.inProgress(ReviewLanguage.FR)))
         fixture.stores.reviewsByDay shouldBe mapOf((42L to today) to 1)
+    }
+
+    @Test
+    fun `forgets the closing of a reopened pull request, even when its head was already reviewed`() {
+        val fixture = Fixture()
+        val closed = PullRequestState(7, 3, lastReviewedSha = "head1", closedAt = Instant.parse("2026-11-01T08:00:00Z"))
+        fixture.stores.states[7L to 3] = closed
+
+        fixture.prepare() shouldBe Preparation.Stopped(StopReason.ALREADY_REVIEWED)
+        withClue("Only a reopening clears the closing") { fixture.stores.states.getValue(7L to 3) shouldBe closed }
+
+        val reopened = fixture.preparer.prepare(reviewJob(trigger = ReviewTrigger.REOPENED))
+
+        reopened shouldBe Preparation.Stopped(StopReason.ALREADY_REVIEWED)
+        fixture.stores.states.getValue(7L to 3) shouldBe closed.copy(closedAt = null)
     }
 
     @Test

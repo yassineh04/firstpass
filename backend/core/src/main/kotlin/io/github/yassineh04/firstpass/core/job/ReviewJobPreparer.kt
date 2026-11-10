@@ -23,6 +23,7 @@ import io.github.yassineh04.firstpass.core.store.PullRequestState
 import io.github.yassineh04.firstpass.core.store.PullRequestStateStore
 import io.github.yassineh04.firstpass.core.store.UsageStore
 import io.github.yassineh04.firstpass.core.webhook.Job
+import io.github.yassineh04.firstpass.core.webhook.ReviewTrigger
 import java.time.Clock
 import java.time.Instant
 
@@ -79,12 +80,24 @@ class ReviewJobPreparer(
     private val refusal = QuotaRefusal(github, pullRequests, quota)
 
     fun prepare(job: Job.Review): Preparation {
-        val state =
+        val stored =
             pullRequests.state(job.repository.id, job.pullRequest)
                 ?: PullRequestState(job.repository.id, job.pullRequest)
+        val state = reopened(job, stored)
         val known = knownStop(job, state)
         return if (known != null) Preparation.Stopped(known) else withPullRequest(job, state)
     }
+
+    /** A reopened pull request must not expire like a closed one, even when its head was already reviewed. */
+    private fun reopened(
+        job: Job.Review,
+        state: PullRequestState,
+    ): PullRequestState =
+        if (job.trigger == ReviewTrigger.REOPENED && state.closedAt != null) {
+            state.copy(closedAt = null).also(pullRequests::save)
+        } else {
+            state
+        }
 
     /** Step 6: what FirstPass knows without calling GitHub, including a replay of a head already reviewed. */
     private fun knownStop(

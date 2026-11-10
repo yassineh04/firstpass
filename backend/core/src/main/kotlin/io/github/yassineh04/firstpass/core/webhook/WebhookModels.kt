@@ -1,5 +1,7 @@
 package io.github.yassineh04.firstpass.core.webhook
 
+import java.time.Instant
+
 /** A repository as webhooks describe it: `fullName` is `owner/name`. */
 data class RepositoryRef(
     val id: Long,
@@ -68,13 +70,18 @@ enum class InstallationChange {
     REPOSITORIES_REMOVED,
 }
 
-/** A unit of work for the worker, sent through the queue. Every job carries its delivery id for tracing. */
+/**
+ * A unit of work for the worker, sent through the queue. Every job carries its delivery id for
+ * tracing, and the time the webhook was received, which stays the same when the job is replayed.
+ */
 sealed interface Job {
     val deliveryId: String
+    val receivedAt: Instant
     val installationId: Long
 
     data class Review(
         override val deliveryId: String,
+        override val receivedAt: Instant,
         override val installationId: Long,
         val repository: RepositoryRef,
         val pullRequest: Int,
@@ -86,6 +93,7 @@ sealed interface Job {
     /** Records the closing; the feedback on the comments is collected from it in phase 5. */
     data class PullRequestClosed(
         override val deliveryId: String,
+        override val receivedAt: Instant,
         override val installationId: Long,
         val repository: RepositoryRef,
         val pullRequest: Int,
@@ -95,6 +103,7 @@ sealed interface Job {
     /** [accountLogin] and [accountType] are known for installation events, not for repository changes. */
     data class Installation(
         override val deliveryId: String,
+        override val receivedAt: Instant,
         override val installationId: Long,
         val change: InstallationChange,
         val accountLogin: String?,
