@@ -25,6 +25,13 @@ dependencies {
     testRuntimeOnly(libs.findLibrary("junit-platform-launcher").get())
 }
 
+// The AWS SDK adds the Apache 5 and Netty HTTP clients to every service module. FirstPass uses
+// the lighter URLConnection client everywhere (ADR 0014), so neither is ever packaged.
+configurations.configureEach {
+    exclude(group = "software.amazon.awssdk", module = "apache5-client")
+    exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }

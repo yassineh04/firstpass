@@ -20,6 +20,7 @@ include(
     "github",
     "llm",
     "persistence",
+    "aws",
     "webhook-handler",
     "review-worker",
     "api",

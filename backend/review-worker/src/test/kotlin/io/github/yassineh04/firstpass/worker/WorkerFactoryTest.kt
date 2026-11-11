@@ -39,6 +39,22 @@ class WorkerFactoryTest {
         WorkerFactory.create(settings + ("FIRSTPASS_LLM_PROVIDER" to "fake"), table)
     }
 
+    @Test
+    fun `takes the key itself, as SSM gives it in AWS, instead of a file`() {
+        val pem = Files.readString(writeKey())
+        val settings =
+            mapOf(
+                "GITHUB_APP_PRIVATE_KEY" to pem,
+                "GITHUB_CLIENT_ID" to "Iv1.test",
+                "FIRSTPASS_LLM_PROVIDER" to "fake",
+            )
+
+        WorkerFactory.create(settings, table)
+        shouldThrow<IllegalArgumentException> {
+            WorkerFactory.create(settings + ("GITHUB_APP_PRIVATE_KEY" to "not a key"), table)
+        }
+    }
+
     /**
      * A key generated for this test only. The markers are built from parts, so that secret
      * scanners ignore this file.

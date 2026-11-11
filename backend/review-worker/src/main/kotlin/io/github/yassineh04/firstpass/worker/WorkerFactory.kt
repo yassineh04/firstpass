@@ -70,7 +70,10 @@ object WorkerFactory {
         fun required(name: String) = optional(name) ?: throw MissingSettingException(name)
 
         val http = GitHubHttp(URI.create(optional("GITHUB_API_URL") ?: GITHUB_API), clock)
-        val key = PrivateKeys.read(Path.of(required("GITHUB_APP_PRIVATE_KEY_PATH")))
+        // In AWS, the key itself comes from SSM; locally, a file path keeps it out of .env.
+        val key =
+            optional("GITHUB_APP_PRIVATE_KEY")?.let(PrivateKeys::readPkcs8)
+                ?: PrivateKeys.read(Path.of(required("GITHUB_APP_PRIVATE_KEY_PATH")))
         val credentials = AppCredentials(required("GITHUB_CLIENT_ID"), key)
         val tokens = InstallationTokens(http, credentials, clock)
         val github = GitHubRestClient(http, tokens)
