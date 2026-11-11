@@ -90,6 +90,18 @@ On Windows, run the same commands from Git Bash, or use `gradlew.bat` in PowerSh
 
 The persistence tests start DynamoDB Local in a container with [Testcontainers](https://java.testcontainers.org/), so Docker must be running for `./gradlew build`. They do not need `docker compose`.
 
+### Run the app locally
+
+The `local-dev` module runs the webhook intake and the review worker together, against DynamoDB Local and the development GitHub App:
+
+```bash
+docker compose up -d
+cd backend
+./gradlew :local-dev:run    # listens on http://127.0.0.1:8080/webhook
+```
+
+GitHub's webhooks reach it through a smee channel, as described in [docs/github-app-setup.md](docs/github-app-setup.md#7-run-firstpass-locally-and-relay-webhooks-to-it).
+
 ### Review a patch locally
 
 The `eval` module runs the same review pipeline as the app on a git diff and prints the result as JSON. Paths are relative to the repository root.

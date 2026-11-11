@@ -6,6 +6,7 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
 import software.amazon.awssdk.services.dynamodb.model.DeleteRequest
 import software.amazon.awssdk.services.dynamodb.model.PutRequest
 import software.amazon.awssdk.services.dynamodb.model.WriteRequest
+import java.net.URI
 import java.time.Instant
 
 /**
@@ -111,9 +112,22 @@ class FirstPassTable(
         }
     }
 
+    /** Local only: creates the table on DynamoDB Local when it is missing. In AWS, Terraform creates it. */
+    fun createIfMissing() = TableSetup.createIfMissing(client, name)
+
     companion object {
         const val DEFAULT_NAME = "firstpass"
         const val GSI1 = "GSI1"
+
+        /**
+         * The table named by `DYNAMODB_TABLE` (default `firstpass`), on DynamoDB Local when
+         * `DYNAMODB_ENDPOINT` is set, otherwise on AWS with the region and credentials of the environment.
+         */
+        fun fromSettings(settings: Map<String, String>): FirstPassTable {
+            fun setting(name: String) = settings[name]?.trim()?.takeIf { it.isNotEmpty() }
+            val client = DynamoClients.create(setting("DYNAMODB_ENDPOINT")?.let(URI::create))
+            return FirstPassTable(client, setting("DYNAMODB_TABLE") ?: DEFAULT_NAME)
+        }
     }
 }
 

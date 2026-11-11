@@ -87,12 +87,26 @@ Copy `.env.example` to `.env` at the repository root, then set:
 
 Create a public test repository, for example `firstpass-sandbox`. On the app page, select **Install App**, choose your account, then **Only select repositories** and pick the sandbox.
 
-## 7. Relay webhooks to your machine
+## 7. Run FirstPass locally and relay webhooks to it
 
-With the local server running on port 8080:
+For a real review, set `FIRSTPASS_LLM_PROVIDER=gemini` and `GEMINI_API_KEY` in `.env`. With `fake`, the review only says that nothing was found.
+
+In a first terminal, start DynamoDB Local and the local server:
+
+```bash
+docker compose up -d
+cd backend
+./gradlew :local-dev:run
+```
+
+On start, the server creates the table in DynamoDB Local, which keeps nothing between restarts, and records the app's installations and repositories from GitHub. It then listens on `http://127.0.0.1:8080/webhook` and logs each delivery and each job, without any code or secret.
+
+In a second terminal, relay the webhooks of your smee channel to it:
 
 ```bash
 npx smee-client@5.0.0 --url https://smee.io/<your-channel> --target http://localhost:8080/webhook
 ```
 
 Open a pull request on the sandbox repository. The app settings list recent deliveries under **Advanced**, where you can also redeliver one from the last three days.
+
+**Signatures through smee.** smee.io and smee-client read the JSON payload and encode it again before they forward it. The local server still checks GitHub's signature over the bytes it receives, so a delivery whose JSON changes on the way is refused with 401, and the server log says so. Escaped characters and non-ASCII text are the usual cause, so keep the titles and descriptions of test pull requests to plain text. If deliveries keep failing, use a tunnel that forwards the original bytes instead of smee, such as a Cloudflare quick tunnel (`cloudflared tunnel --url http://localhost:8080`), and set the app's webhook URL to the tunnel address followed by `/webhook`. That address changes each time the tunnel starts.

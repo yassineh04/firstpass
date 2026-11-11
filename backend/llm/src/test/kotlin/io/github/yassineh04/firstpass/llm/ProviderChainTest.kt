@@ -1,7 +1,5 @@
-package io.github.yassineh04.firstpass.eval
+package io.github.yassineh04.firstpass.llm
 
-import io.github.yassineh04.firstpass.llm.ApiKey
-import io.github.yassineh04.firstpass.llm.Providers
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -52,17 +50,25 @@ class ProviderChainTest {
         fromSettings.model shouldBe "qwen-coder"
         fromSettings.baseUrl shouldBe "http://ollama:11434/v1/"
         ProviderChain.configs("ollama", "llama-x", emptyMap()).single().baseUrl shouldBe Providers.ollama("m").baseUrl
-        shouldThrow<CliError> { ProviderChain.configs("ollama", null, emptyMap()) }.message shouldContain "--model"
+        shouldThrow<ProviderSetupException> { ProviderChain.configs("ollama", null, emptyMap()) }.message shouldContain
+            "--model"
     }
 
     @Test
     fun `explains a missing key or an unknown provider`() {
-        shouldThrow<CliError> { ProviderChain.configs("gemini", null, emptyMap()) }.message.let {
+        shouldThrow<ProviderSetupException> { ProviderChain.configs("gemini", null, emptyMap()) }.message.let {
             it shouldContain GEMINI
             it shouldContain ".env"
         }
-        shouldThrow<CliError> { ProviderChain.configs("groq", null, mapOf(GROQ to "")) }.message shouldContain GROQ
-        shouldThrow<CliError> { ProviderChain.build("openai", null, emptyMap()) }.message shouldContain
+        shouldThrow<ProviderSetupException> {
+            ProviderChain.configs(
+                "groq",
+                null,
+                mapOf(GROQ to ""),
+            )
+        }.message shouldContain
+            GROQ
+        shouldThrow<ProviderSetupException> { ProviderChain.build("openai", null, emptyMap()) }.message shouldContain
             "fake, ollama, gemini or groq"
     }
 

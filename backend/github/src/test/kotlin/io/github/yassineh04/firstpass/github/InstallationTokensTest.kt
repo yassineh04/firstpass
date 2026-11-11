@@ -132,7 +132,7 @@ class InstallationTokensTest {
 
         client.app() shouldBe AppInfo(5671048, "firstpass-dev", "FirstPass Dev")
         client.installations() shouldContainExactly
-            listOf(InstallationInfo(42, "octo"), InstallationInfo(43, "big-corp"))
+            listOf(InstallationInfo(42, "octo", "User"), InstallationInfo(43, "big-corp", "Enterprise"))
         client.installationRepositories(42) shouldContainExactly
             listOf(RepositoryRef(7, "octo/sandbox", private = false))
 

@@ -56,10 +56,14 @@ data class AppInfo(
     val name: String,
 )
 
-/** An installation; [account] is the user or organization login, or an enterprise's slug. */
+/**
+ * An installation; [account] is the user or organization login, or an enterprise's slug, and
+ * [accountType] is `User` or `Organization`, or `Enterprise` for an enterprise, which has no type.
+ */
 data class InstallationInfo(
     val id: Long,
     val account: String,
+    val accountType: String,
 )
 
 /** Calls made as the app itself (with its JWT) or as one of its installations. */
@@ -78,7 +82,11 @@ class GitHubAppClient(
 
     fun installations(): List<InstallationInfo> =
         http.getAll("/app/installations?per_page=$PAGE_SIZE", appAuthorization()).map {
-            InstallationInfo(it.long("id"), it.textOrNull("account.login") ?: it.text("account.slug"))
+            InstallationInfo(
+                it.long("id"),
+                it.textOrNull("account.login") ?: it.text("account.slug"),
+                it.textOrNull("account.type") ?: ENTERPRISE,
+            )
         }
 
     fun installationRepositories(installationId: Long): List<RepositoryRef> =
@@ -91,5 +99,6 @@ class GitHubAppClient(
 
     private companion object {
         const val PAGE_SIZE = 100
+        const val ENTERPRISE = "Enterprise"
     }
 }
