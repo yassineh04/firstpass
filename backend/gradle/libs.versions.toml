@@ -14,6 +14,7 @@ json-schema-validator = "3.0.8"
 wiremock = "3.13.2"
 aws-sdk = "2.57.4"
 testcontainers = "2.0.5"
+aws-lambda-java-core = "1.4.1"
 
 [libraries]
 # JSON (llm adapter only: core never depends on a JSON library)
@@ -26,6 +27,11 @@ json-schema-validator = { module = "com.networknt:json-schema-validator", versio
 aws-sdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-sdk" }
 aws-dynamodb = { module = "software.amazon.awssdk:dynamodb" }
 aws-url-connection-client = { module = "software.amazon.awssdk:url-connection-client" }
+aws-sqs = { module = "software.amazon.awssdk:sqs" }
+aws-ssm = { module = "software.amazon.awssdk:ssm" }
+
+# The handler interface of the Lambda Java runtime (Apache-2.0).
+aws-lambda-java-core = { module = "com.amazonaws:aws-lambda-java-core", version.ref = "aws-lambda-java-core" }
 
 # Test libraries
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
