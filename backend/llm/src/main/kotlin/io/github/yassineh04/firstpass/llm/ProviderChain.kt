@@ -1,19 +1,19 @@
-package io.github.yassineh04.firstpass.eval
+package io.github.yassineh04.firstpass.llm
 
 import io.github.yassineh04.firstpass.core.batch.ProviderBudget
 import io.github.yassineh04.firstpass.core.review.ReviewProvider
-import io.github.yassineh04.firstpass.llm.ApiKey
-import io.github.yassineh04.firstpass.llm.FakeLlmClient
-import io.github.yassineh04.firstpass.llm.OpenAiCompatibleClient
-import io.github.yassineh04.firstpass.llm.ProviderConfig
-import io.github.yassineh04.firstpass.llm.Providers
+
+/** A provider cannot be built from the settings: an unknown name, or a missing key or model. */
+class ProviderSetupException(
+    message: String,
+) : IllegalArgumentException(message)
 
 /**
- * The providers named on the command line, built from the local settings. Gemini gets Groq as
- * fallback when a Groq key is set, as in production; the other providers come alone. `--model`
- * only changes the main provider.
+ * The review providers, built from settings such as the environment or the local `.env` file.
+ * Gemini gets Groq as fallback when a Groq key is set, as in production; the other providers come
+ * alone. A [model] only changes the main provider.
  */
-internal object ProviderChain {
+object ProviderChain {
     private const val FAKE = "fake"
     private const val GEMINI_KEY = "GEMINI_API_KEY"
     private const val GROQ_KEY = "GROQ_API_KEY"
@@ -43,7 +43,7 @@ internal object ProviderChain {
             "gemini" -> listOfNotNull(gemini(apiKey(settings, GEMINI_KEY), model), groqFallback(settings))
             "groq" -> listOf(groq(apiKey(settings, GROQ_KEY), model))
             "ollama" -> listOf(ollama(settings, model))
-            else -> throw CliError("Unknown provider: $provider. Use fake, ollama, gemini or groq.")
+            else -> throw ProviderSetupException("Unknown provider: $provider. Use fake, ollama, gemini or groq.")
         }
 
     private fun gemini(
@@ -65,7 +65,9 @@ internal object ProviderChain {
     ): ProviderConfig {
         val name =
             model ?: setting(settings, "OLLAMA_MODEL")
-                ?: throw CliError("Ollama needs a model: pass --model, or set OLLAMA_MODEL in the .env file.")
+                ?: throw ProviderSetupException(
+                    "Ollama needs a model: pass --model, or set OLLAMA_MODEL in the .env file.",
+                )
         val baseUrl = setting(settings, "OLLAMA_BASE_URL")
         return if (baseUrl == null) Providers.ollama(name) else Providers.ollama(name, baseUrl)
     }
@@ -75,7 +77,7 @@ internal object ProviderChain {
         name: String,
     ): ApiKey =
         setting(settings, name)?.let(::ApiKey)
-            ?: throw CliError(
+            ?: throw ProviderSetupException(
                 "$name is not set: add it to the .env file at the repository root, or set it in the environment.",
             )
 

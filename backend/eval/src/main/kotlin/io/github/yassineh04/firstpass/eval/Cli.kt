@@ -11,6 +11,8 @@ import io.github.yassineh04.firstpass.core.review.ReviewOutcome
 import io.github.yassineh04.firstpass.core.review.ReviewProvider
 import io.github.yassineh04.firstpass.core.review.ReviewRequest
 import io.github.yassineh04.firstpass.core.settings.ReviewSettings
+import io.github.yassineh04.firstpass.llm.ProviderChain
+import io.github.yassineh04.firstpass.llm.ProviderSetupException
 import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -28,7 +30,7 @@ internal class Cli(
     private val out: PrintStream,
     private val err: PrintStream,
     private val clock: Clock = Clock.systemUTC(),
-    private val chain: (String, String?, Map<String, String>) -> List<ReviewProvider> = ProviderChain::build,
+    private val chain: (String, String?, Map<String, String>) -> List<ReviewProvider> = ::providers,
 ) {
     fun run(args: List<String>): Int =
         try {
@@ -193,3 +195,15 @@ internal class Cli(
             """.trimIndent()
     }
 }
+
+/** The providers of the command line; a provider that cannot be built is a problem the user can fix. */
+private fun providers(
+    provider: String,
+    model: String?,
+    settings: Map<String, String>,
+): List<ReviewProvider> =
+    try {
+        ProviderChain.build(provider, model, settings)
+    } catch (error: ProviderSetupException) {
+        throw CliError(error.message.orEmpty(), error)
+    }
