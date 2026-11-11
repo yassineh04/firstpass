@@ -19,3 +19,4 @@ To add a record, copy [template.md](template.md), give it the next number and op
 | [0011](0011-terraform-with-hcp-state.md) | Terraform with state in HCP Terraform, not AWS CDK | Accepted |
 | [0012](0012-spring-boot-4.md) | Spring Boot 4 for the dashboard API | Accepted |
 | [0013](0013-ssm-parameters-outside-terraform.md) | SSM parameters created by hand, outside Terraform | Accepted |
+| [0014](0014-low-level-dynamodb-client.md) | Low-level DynamoDB client with explicit mappers | Accepted |
