@@ -12,6 +12,8 @@ kotlinx-coroutines = "1.11.0"
 jackson = "3.2.4"
 json-schema-validator = "3.0.8"
 wiremock = "3.13.2"
+aws-sdk = "2.57.4"
+testcontainers = "2.0.5"
 
 [libraries]
 # JSON (llm adapter only: core never depends on a JSON library)
@@ -19,6 +21,11 @@ jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref
 jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-dataformat-yaml = { module = "tools.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "json-schema-validator" }
+
+# AWS SDK for Java v2 (persistence adapter only), versions aligned by the BOM
+aws-sdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-sdk" }
+aws-dynamodb = { module = "software.amazon.awssdk:dynamodb" }
+aws-url-connection-client = { module = "software.amazon.awssdk:url-connection-client" }
 
 # Test libraries
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
@@ -30,6 +37,8 @@ kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest"
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 # Standalone build: its own dependencies are shaded, so they cannot clash with ours.
 wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
+# Starts DynamoDB Local in Docker for the persistence tests.
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 
 # Gradle plugins, used as dependencies of the convention plugins in build-logic
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

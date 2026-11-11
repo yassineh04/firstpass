@@ -88,6 +88,8 @@ cd backend
 
 On Windows, run the same commands from Git Bash, or use `gradlew.bat` in PowerShell.
 
+The persistence tests start DynamoDB Local in a container with [Testcontainers](https://java.testcontainers.org/), so Docker must be running for `./gradlew build`. They do not need `docker compose`.
+
 ### Review a patch locally
 
 The `eval` module runs the same review pipeline as the app on a git diff and prints the result as JSON. Paths are relative to the repository root.
