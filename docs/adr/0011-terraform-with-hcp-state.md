@@ -1,6 +1,6 @@
 # 0011. Terraform with state in HCP Terraform, not AWS CDK
 
-- Status: Accepted
+- Status: Accepted; the state part is superseded by [ADR 0016](0016-deployment-ready-without-a-cloud-account.md)
 - Date: 2026-11-06
 
 ## Context

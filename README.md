@@ -2,13 +2,15 @@
 
 A GitHub App that posts a first-pass AI code review on pull requests in under two minutes. It only comments: it never approves, blocks, merges or pushes. Humans keep the decision.
 
-> **Status: early development (phase 3, deployment to AWS).** The app is not installable yet. It already reviews real pull requests when run locally with a development GitHub App (see [Run the app locally](#run-the-app-locally)), and a patch file can be reviewed from the command line (see [Review a patch locally](#review-a-patch-locally)). This README grows with each phase.
+> **Status: early development (phase 3 done, ready to deploy).** FirstPass reviews real pull requests when run locally with a development GitHub App (see [Run the app locally](#run-the-app-locally)), and a patch file can be reviewed from the command line (see [Review a patch locally](#review-a-patch-locally)). Its AWS infrastructure is written and tested, but on purpose it is not deployed: no cloud account and no payment method are used ([ADR 0016](docs/adr/0016-deployment-ready-without-a-cloud-account.md)). Anyone with an AWS account can deploy it with [docs/deploy.md](docs/deploy.md). This README grows with each phase.
 
 ## Why
 
 Pull requests often wait for a reviewer, and simple mistakes (unhandled null, unclosed resource, committed secret, missing test) take senior developers' time. FirstPass catches the obvious problems first, so the human review can focus on design.
 
-## How it works (planned)
+## How it works
+
+The architecture below is the AWS deployment, written in Terraform and tested in CI. Locally, the `local-dev` module runs the same webhook intake and review worker in one process, with DynamoDB Local and an in-memory queue.
 
 ```mermaid
 flowchart LR
@@ -44,8 +46,8 @@ flowchart LR
 | Dashboard API | Spring Boot 4 on AWS Lambda |
 | Frontend | Vue 3, TypeScript, Vite, Pinia, vue-i18n, Tailwind CSS |
 | Data and messaging | DynamoDB (provisioned), SQS |
-| Infrastructure as code | Terraform, state in HCP Terraform |
-| CI/CD | GitHub Actions, AWS access through OIDC |
+| Infrastructure as code | Terraform, checked offline in CI (`terraform test` with a mocked provider, TFLint, Checkov) |
+| CI/CD | GitHub Actions |
 | LLM providers | Gemini (primary), Groq (fallback), Ollama (local) |
 
 ## Repository layout (target)
