@@ -3,7 +3,7 @@
 FirstPass uses two GitHub Apps:
 
 - a **development app**, whose webhooks are relayed to your machine by [smee.io](https://smee.io);
-- a **production app**, whose webhooks go to the AWS Lambda function URL (set up when the infrastructure is deployed).
+- a **production app**, whose webhooks go to the AWS Lambda function URL. It is only needed to deploy FirstPass to your own AWS account ([docs/deploy.md](deploy.md)); this project runs locally instead ([ADR 0016](adr/0016-deployment-ready-without-a-cloud-account.md)).
 
 This guide covers the development app. Never commit the private key, the secrets or the `.env` file; `.gitignore` already excludes `.env` and `*.pem`.
 

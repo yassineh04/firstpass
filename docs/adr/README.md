@@ -16,8 +16,9 @@ To add a record, copy [template.md](template.md), give it the next number and op
 | [0008](0008-config-from-base-branch.md) | Read the configuration from the base branch | Accepted |
 | [0009](0009-openai-compatible-llm-client.md) | One OpenAI-compatible chat client for several LLM providers | Accepted |
 | [0010](0010-hash-routing-github-pages.md) | Hash routing for the dashboard on GitHub Pages | Accepted |
-| [0011](0011-terraform-with-hcp-state.md) | Terraform with state in HCP Terraform, not AWS CDK | Accepted |
+| [0011](0011-terraform-with-hcp-state.md) | Terraform with state in HCP Terraform, not AWS CDK | Accepted; state part superseded by ADR 0016 |
 | [0012](0012-spring-boot-4.md) | Spring Boot 4 for the dashboard API | Accepted |
 | [0013](0013-ssm-parameters-outside-terraform.md) | SSM parameters created by hand, outside Terraform | Accepted |
 | [0014](0014-low-level-dynamodb-client.md) | Low-level DynamoDB client with explicit mappers | Accepted |
 | [0015](0015-json-logs-without-powertools.md) | JSON logs with a small logger, without Powertools | Accepted |
+| [0016](0016-deployment-ready-without-a-cloud-account.md) | Ready to deploy, without a cloud account | Accepted |
