@@ -12,7 +12,7 @@ kotlinx-coroutines = "1.11.0"
 jackson = "3.2.4"
 json-schema-validator = "3.0.8"
 wiremock = "3.13.2"
-aws-sdk = "2.57.4"
+aws-sdk = "2.57.8"
 testcontainers = "2.0.5"
 aws-lambda-java-core = "1.4.1"
 
